@@ -1,4 +1,4 @@
-(define-library (srfi 130)
+(module srfi-130 ()
   (import (except (scheme base)
                   string-map
                   string-for-each))
@@ -27,6 +27,6 @@
           string-fold string-fold-right string-for-each-cursor
           string-replicate string-count string-replace
           string-split string-filter string-remove)
-  (include "macros.scm")
-  (include "portable.scm")
+  (include "srfi-130/macros.scm")
+  (include "srfi-130/portable.scm")
 )
