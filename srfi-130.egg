@@ -1,0 +1,9 @@
+;;; srfi-130.egg -*- Scheme -*- vim: ft=scheme:
+
+((author "John Cowan")
+ (maintainer "Sergey Goldgaber")
+ (synopsis "SRFI-130: Cursor-based string library")
+ (category data)
+ (test-dependencies test)
+ (license "MIT")
+ (components (extension srfi-130)))
