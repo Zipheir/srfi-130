@@ -29,4 +29,5 @@
           string-split string-filter string-remove)
   (include "srfi-130/macros.scm")
   (include "srfi-130/portable.scm")
+  (include "srfi-130/srfi-130.scm")
 )
