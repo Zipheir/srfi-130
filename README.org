@@ -1,22 +1,762 @@
-* SRFI 130: Cursor-based string library
+Title
 
-** by John Cowan
+Cursor-based string library
 
+Author
 
+John Cowan
 
-keywords: [[https://srfi.schemers.org/?keywords=data-structure][Data Structure]]
+Status
 
-This repository hosts [[https://srfi.schemers.org/srfi-130/][SRFI 130]]: Cursor-based string library, a [[https://srfi.schemers.org/][Scheme Request for Implementation]].
+This SRFI is currently in final status. Here is an explanation of each status that a SRFI can hold. To provide input on this SRFI, please send email to srfi-130@nospam
+srfi.schemers.org. To subscribe to the list, follow these instructions. You can access previous messages via the mailing list archive.
 
-This SRFI is in /final/ status.
+  * Received: 2015-12-02
+  * 60-day deadline: 2016-02-01
+  * Draft #1 published: 2015-12-03
+  * Draft #2 published: 2015-12-13
+  * Draft #3 published: 2016-03-28
+  * Draft #4 published: 2016-04-12
+  * Draft #5 published: 2016-05-14
+  * Draft #6 published: 2016-05-14
+  * Draft #7 published: 2016-05-22
+  * Draft #8 published: 2016-05-23 (code changes only)
+  * Finalized: 2016-05-08
 
-See also [[https://srfi.schemers.org/srfi-13/][SRFI 13: String Libraries]].
+Table of contents
 
-The full documentation for this SRFI can be found in the [[https://srfi.schemers.org/srfi-130/srfi-130.html][SRFI Document]].
+  * Abstract
+  * Procedure index
+  * Rationale
+  * Specification
+      + String cursors
+      + Calling predicates
+      + Shared storage
+      + Naming conventions
+      + Notation
+      + Procedures
+          o Cursor operations
+          o Predicates
+          o Constructors
+          o Conversion
+          o Selection
+          o Prefixes & suffixes
+          o Searching
+          o The whole string
+      + Sample implementation
+      + Acknowledgements
+      + References & Links
+      + Copyright
 
-If you'd like to participate in the discussion of this SRFI, or report issues with it, please [[https://srfi.schemers.org/srfi-130/][join the SRFI-130 mailing list]] and send your message there.
+    Abstract
 
-Thank you.
+    R5RS Scheme has an impoverished set of string-processing utilities, which is a problem for authors of portable code. Although R7RS provides some extensions and
+    improvements, it is still very incomplete. This SRFI proposes a coherent and comprehensive set of string-processing procedures; it is accompanied by a portable sample
+    implementation of the spec.
 
+    This SRFI is derived from SRFI 13. The biggest difference is that it allows subsequences of strings to be specified by cursors as well as the traditional string
+    indexes. In addition, it omits the comparison, case-mapping, and mutation operations of SRFI 13, as well as all procedures already present in R7RS.
 
-[[mailto:srfi-editors@srfi.schemers.org][The SRFI Editors]]
+    Procedure Index
+
+    Here is a list of the procedures provided by this SRFI.
+
+    Cursor operations
+
+        string-cursor?
+        string-cursor-start    string-cursor-end
+        string-cursor-next     string-cursor-prev
+        string-cursor-forward  string-cursor-back
+        string-cursor=?
+        string-cursor<?        string-cursor>?
+        string-cursor<=?       string-cursor>=?
+        string-cursor-diff
+        string-cursor->index   string-index->cursor
+
+    Predicates
+
+        string-null?
+        string-every string-any
+
+    Constructors
+
+        string-tabulate
+        string-unfold   string-unfold-right
+
+    Conversion
+
+        string->list/cursors string->vector/cursors
+        reverse-list->string string-join
+
+    Selection
+
+        string-ref/cursor
+        substring/cursors  string-copy/cursors
+        string-take        string-take-right
+        string-drop        string-drop-right
+        string-pad         string-pad-right
+        string-trim        string-trim-right string-trim-both
+
+    Prefixes & suffixes
+
+        string-prefix-length    string-suffix-length
+        string-prefix?          string-suffix?
+
+    Searching
+
+        string-index     string-index-right
+        string-skip      string-skip-right
+        string-contains  string-contains-right
+
+    The whole string
+
+        string-reverse
+        string-concatenate  string-concatenate-reverse
+        string-fold         string-fold-right
+        string-for-each-cursor
+        string-replicate    string-count
+        string-replace      string-split
+        string-filter       string-remove
+
+    Rationale
+
+    This SRFI defines a rich set of operations for manipulating strings. These are frequently useful for scripting and other text-manipulation applications. The library's
+    design was influenced by the string libraries found in MIT Scheme, Gambit, RScheme, MzScheme, SLIB, Common Lisp, Bigloo, Guile, Chez, APL, Java, and the SML standard
+    basis. All functionality is available in substring and full-string forms.
+
+    When SRFI 13 was defined in 1999, it was intended to provide efficient string operations on both whole strings and substrings. At that time, it was normal for strings
+    to be sequences of 8-bit characters, or in a few cases, characters of other fixed lengths. Consequently, many of the SRFI 13 procedures accept optional exact integer
+    arguments for each of the string arguments, indexing the beginning and the end of the substring(s) to be operated on.
+
+    Unfortunately for this design, Unicode has become much more widely used, and it is now fairly common for implementations to store strings internally as UTF-8 or UTF-16
+    code unit sequences, which means that indexing operations are potentially O(n) rather than O(1). Using opaque cursors makes it possible to iterate much more
+    efficiently through such strings compared to incrementing or decrementing indexes; however, for backward compatibility, the procedures defined in this SRFI accept
+    either cursors or indexes. The results returned are always cursors: the use of indexes is preserved mainly for the sake of existing code and for implementer
+    convenience.
+
+    The operations provided here are entirely independent of the character repertoire supported by the implementation. In particular, this means that the comparison and
+    case conversion procedures of SRFI 13 are excluded. There is also no provision for R6RS normalization procedures or for a string->integer procedure that was proposed
+    for SRFI 13 but not included. These may appear in future SRFIs. Furthermore, string mutation can be extremely expensive if the storage used for the string needs to be
+    expanded, particularly if the implementation does not use an indirect pointer to it (as in Chicken), so this SRFI does not provide for it. The low-level procedures of
+    SRFI 13 are specific to the sample implementation, and have been removed to make other implementations simpler and easier.
+
+    Many SRFI 13 procedures accept either a predicate, a single character, or a SRFI 14 character set. In this SRFI, only support for predicates is required, though
+    implementations may also support the other two alternatives. In that case, a single character is interpreted as a predicate which returns true if its argument is the
+    same (in the sense of eqv?) to that character; a character set is interpreted as a predicate which returns true if its argument belongs to that character set. In SRFI
+    13, character sets are inherently more efficient than predicates because testing them is fast and free of side effects, though how fast character sets actually are if
+    they support full Unicode is very implementation-dependent. The only procedure that absolutely requires character set support, string-tokenize, has been replaced here
+    by the more usual string-split procedure provided by Perl, Python, Java, JavaScript, and other languages.
+
+    The search procedures in SRFI 13 return either an index or #f if the search fails. Their counterparts in this SRFI return cursors. Left-to-right searches return a
+    cursor representing the leftmost matching character, or the post-end cursor if there is no match; right-to-left searches return a cursor representing the successor of
+    the rightmost matching character, or the start cursor if there is no match. This convention was devised by Alan Watson and implemented in Chibi Scheme.
+
+    In short, this SRFI is intended to help move the practice of Scheme programming away from mutable strings, string indexes, and SRFI 13, while largely maintaining
+    backward compatibility. It does not require any particular run-time efficiencies from its procedures.
+
+    Specification
+
+    String cursors
+
+    While indexes are exact integers ranging from 0 to the length of the string they refer to, cursors are opaque objects that point into strings. However, they are not
+    required to belong to a disjoint type, as long as they are either disjoint from indexes or identical to indexes. For example, they may be negative exact integers
+    representing indexes into a byte array underlying the string. It is also possible to implement cursors as a record type or an implementation-specific primitive type.
+    Additionally, in implementations where no provision has been made for cursors, or there is no benefit in implementing them separately because strings are in fact
+    arrays of fixed-length characters, it is useful to allow indexes and cursors to be the same thing. (Cursors must also be disjoint from #f.)
+
+    It is an error to make any use of a cursor referring to a string after the string, or any string that shares storage with it, has been mutated by a procedure like
+    string-set!, string-copy!, or string-fill!.
+
+    Given a string of length n, there are n + 1 valid cursors that refer to it: one for each character in the string, and one for the position just after the last
+    character, known as the "post-end cursor". The cursor for the first (or zeroth) position in the string is known as the "start cursor". The post-end cursor is provided
+    because when creating a string from cursors the second cursor argument is exclusive. It is an error if a cursor argument is not one of the valid cursors for the string
+    argument. The index analogue of the post-end cursor is n.
+
+    Calling predicates
+
+    All predicates passed to procedures defined in this SRFI may be called in any order and any number of times, except as otherwise noted. This is not the case in SRFI
+    13.
+
+    Shared storage
+
+    Some Scheme implementations, e.g. Guile, provide ways to construct substrings that share storage with other strings. SRFI 130 provides only minimal support for such
+    shared substrings. The following SRFI 130 procedures are allowed to return a result which shares storage with one or more of their string arguments:
+
+        substring/cursors
+        string-take string-take-right
+        string-drop string-drop-right
+        string-pad string-pad-right
+        string-trim string-trim-right string-trim-both
+        string-split string-filter string-remove
+
+    In particular, if the result is the same (in the sense of string=?) as any of the arguments, any implementation of the above procedures may return the string argument
+    without copying it. Other procedures such as string-copy/cursors, as well as all the R7RS procedures, are not permitted to return shared results. If a shared value is
+    returned, it may be mutable or immutable.
+
+    Naming conventions
+
+    The procedures of this SRFI follow a consistent naming scheme, and are consistent with the conventions developed in SRFI 1. The names are composed of smaller lexemes
+    in a regular way that exposes the structure and relationships between the procedures. This should help the programmer to recall or reconstitute the name of the desired
+    procedure. In particular, the order of common parameters is consistent across the different procedures.
+
+    Procedures that have left/right directional variants use no suffix to specify left-to-right operation, -right to specify right-to-left operation, and -both to specify
+    both. This is a general convention that has been established in other SRFIs; the value of a convention is proportional to the extent of its use.
+
+Notation
+
+In the following procedure specifications:
+
+  * An s parameter is a string.
+  * A char parameter is a character.
+  * Start and end parameters are half-open string cursors or indexes specifying a substring within a string parameter, and typically restrict a procedure's action to the
+    indicated substring. When omitted, they default to 0 and the length of the string, respectively; or from another point of view, they default to the start cursor and
+    the post-end cursor, respectively. For indexes, it must be the case that 0 <= start <= end <= (string-length s), for the corresponding parameter s when start and end
+    are indexes, and the corresponding relationship must hold when they are cursors. It is an error unless start and end are both cursors or both indexes.
+  * A pred parameter is a unary character predicate procedure, returning a true/false value when applied to a character. It is an error if a pred is not pure and
+    functional.
+  * A cursor parameter is either a cursor or an exact non-negative integer specifying an index into a string.
+  * Len and nchars parameters are exact non-negative integers specifying a length of a string or some number of characters.
+  * An obj parameter may be any value at all.
+
+Passing values to procedures with these parameters that do not satisfy these types is an error.
+
+Parameters given in square brackets are optional. Unless otherwise noted in the text describing the procedure, any prefix of these optional parameters may be supplied,
+from zero arguments to the full list. When a procedure returns multiple values, this is shown by listing the return values in square brackets, as well. So, for example,
+the procedure with signature
+
+halts? f [x init-store] → [boolean integer]
+
+would take one (f), two (f, x) or three (f, x, init-store) input parameters, and return two values, a boolean and an integer.
+
+A parameter followed by "..." means zero or more elements. So the procedure with the signature
+
+sum-squares x ...  → number
+
+takes zero or more arguments (x ...), while the procedure with signature
+
+spell-check doc dict[1] dict[2] ... → string-list
+
+takes two required parameters (doc and dict[1]) and zero or more optional parameters (dict[2] ...).
+
+If a procedure's return value is said to be "unspecified," this means that the procedure returns a single arbitrary value. Such a procedure is not even required to be
+consistent from call to call.
+
+Procedures
+
+Cursor operations
+
+These procedures are mostly taken from Chibi Scheme.
+
+string-cursor? obj → boolean
+    Returns #t if obj can be a string cursor, and #f otherwise. In implementations where cursors and indexes are the same thing, #t is returned on any cursor or index;
+    where they are disjoint, #t is returned on cursors, #f on indexes. If obj is neither a cursor nor an index, string-cursor? will always return #f.
+
+    string-cursor-start s → cursor
+    string-cursor-end s → cursor
+        Returns the start/post-end cursor of s respectively.
+    string-cursor-next s cursor → cursor
+    string-cursor-prev s cursor → cursor
+        Returns the cursor into s following/preceding cursor. If cursor is an index, returns one more/less than cursor. It is an error if cursor is the post-end/start
+        cursor of s.
+    string-cursor-forward s cursor nchars → cursor
+    string-cursor-back s cursor nchars → cursor
+        Returns the cursor into s which follows/precedes cursor by nchars characters. If cursor is an index, returns nchars more/less than cursor. It is an error if the
+        result would be an invalid cursor or index.
+    string-cursor=? cursor[1] cursor[2] → boolean
+    string-cursor<? cursor[1] cursor[2] → boolean
+    string-cursor>? cursor[1] cursor[2] → boolean
+    string-cursor<=? cursor[1] cursor[2] → boolean
+    string-cursor>=? cursor[1] cursor[2] → boolean
+        Compares two cursors or two indexes pointing into the same string.
+    string-cursor-diff s start end → nchars
+        Returns the number of characters between start and end in string s. Note that the result is always non-negative if start and end are a valid start-end pair.
+    string-cursor->index s cursor → index
+    string-index->cursor s index → cursor
+        Converts a cursor/index into s into the corresponding index/cursor. If the argument is already an index/cursor, it is returned unchanged.
+
+    Predicates
+
+    string-null? s → boolean
+        Is s the empty string?
+    string-every pred s [start end] → value
+    string-any pred s [start end] → value
+        Checks to see if every/any character in s satisfies pred proceeding from left (index start) to right (index end). The predicate is "witness-generating":
+          o If string-any returns true, the returned true value is the one produced by the application of the predicate.
+          o If string-every returns true, the returned true value is the one produced by the final application of the predicate to s[end-1]. If string-every is applied to
+            an empty sequence of characters, it simply returns #t.
+
+        The names of these procedures do not end with a question mark -- this is to indicate that they do not return a simple boolean (#t or #f), but a general value.
+
+    Constructors
+
+    string-tabulate proc len → string
+        Proc is an integer → char procedure. Construct a string of size len by applying proc to each value from 0 (inclusive) to len (exclusive) to produce the
+        corresponding string element. The order in which proc is applied to the indexes is not specified.
+
+        Note that the order of arguments is not the same as SRFI 1's list-tabulate, but is the same as tabulation functions in other SRFIs. When this discrepancy was
+        discovered in SRFI 13, it was too late to change SRFI 1.
+    string-unfold stop? mapper successor seed [base make-final] → string
+        This is a fundamental constructor for strings.
+          o Successor is used to generate a series of "seed" values from the initial seed:
+            seed, (successor seed), (successor^2 seed), (successor^3 seed), ...
+          o Stop? tells us when to stop -- when it returns true when applied to one of these seed values.
+          o Mapper maps each seed value to the corresponding character in the result string. These chars are assembled into the string in a left-to-right order.
+          o Base is the optional initial/leftmost portion of the constructed string; it defaults to the empty string "".
+          o Make-final is applied to the terminal seed value (on which stop? returns true) to produce the final/rightmost portion of the constructed string. It defaults to
+            (lambda (x) "").
+
+        string-unfold is a fairly powerful string constructor -- you can use it to convert a list to a string, read a port into a string, reverse a string, copy a string,
+        and so forth. Examples:
+
+        (port->string p) = (string-unfold eof-object? values
+                                          (lambda (x) (read-char p))
+                                          (read-char p))
+
+        (list->string lis) = (string-unfold null? car cdr lis)
+
+        (string-tabulate f size) = (string-unfold (lambda (i) (= i size)) f add1 0)
+
+        To map f over a list lis, producing a string:
+
+        (string-unfold null? (compose f car) cdr lis)
+
+        Interested functional programmers may enjoy noting that string-fold-right and string-unfold are in some sense inverses. That is, given operations knull?, kar, kdr,
+        kons, and knil satisfying
+
+        (kons (kar x) (kdr x)) = x  and (knull? knil) = #t
+
+        then
+
+        (string-fold-right kons knil (string-unfold knull? kar kdr x)) = x
+
+        and
+
+        (string-unfold knull? kar kdr (string-fold-right kons knil s)) = s.
+
+        The final string constructed does not share storage with either base or the value produced by make-final.
+
+        This combinator sometimes is called an "anamorphism."
+
+        Note: implementations should take care that runtime stack limits do not cause overflow when constructing large (e.g., megabyte) strings with string-unfold.
+    string-unfold-right stop? mapper successor seed [base make-final] → string
+        This is a fundamental constructor for strings. It is equivalent to string-unfold, except that the results of mapper are assembled into the string in a
+        right-to-left order, base is the optional rightmost portion of the constructed string, and make-final produces the leftmost portion of the constructed string.
+
+    Conversion
+
+    string->list/cursors s [start end] → char-list
+    string->vector/cursors s [start end] → char-vector
+        string->list/cursors and string->vector/cursors return a newly allocated list or vector of the characters that make up the given string. They differ from the R7RS
+        procedures string->list and string->vector by accepting either cursors or indexes.
+    reverse-list->string char-list → string
+        An efficient implementation of (compose list->string reverse):
+
+        (reverse-list->string '(#\a #\B #\c)) → "cBa"
+
+        This is a common idiom in the epilog of string-processing loops that accumulate an answer in a reverse-order list. (See also string-concatenate-reverse for the
+        "chunked" variant.)
+    string-join string-list [delimiter grammar] → string
+        This procedure is a simple unparser --- it pastes strings together using the delimiter string.
+
+        The grammar argument is a symbol that determines how the delimiter is used, and defaults to 'infix.
+          o 'infix means an infix or separator grammar: insert the delimiter between list elements. An empty list will produce an empty string -- note, however, that
+            parsing an empty string with an infix or separator grammar is ambiguous. Is it an empty list, or a list of one element, the empty string?
+          o 'strict-infix means the same as 'infix, but will signal an error if given an empty list.
+          o 'suffix means a suffix or terminator grammar: insert the delimiter after every list element. This grammar has no ambiguities.
+          o 'prefix means a prefix grammar: insert the delimiter before every list element. This grammar has no ambiguities.
+        The delimiter is the string used to delimit elements; it defaults to a single space " ".
+
+        (string-join '("foo" "bar" "baz") ":")         => "foo:bar:baz"
+        (string-join '("foo" "bar" "baz") ":" 'suffix) => "foo:bar:baz:"
+
+        ;; Infix grammar is ambiguous wrt empty list vs. empty string,
+        (string-join '()   ":") => ""
+        (string-join '("") ":") => ""
+
+        ;; but suffix & prefix grammars are not.
+        (string-join '()   ":" 'suffix) => ""
+        (string-join '("") ":" 'suffix) => ":"
+
+    Selection
+
+    string-ref/cursor s cursor → char
+        Returns character s[i] using a valid cursor or index of s. It differs from the R7RS procedure string-ref by accepting either a cursor or an index.
+    substring/cursors s start end → string
+    string-copy/cursors s [start end] → string
+        These procedures return a string whose contents are the characters of s beginning with index start (inclusive) and ending with index end (exclusive). If substring/
+        cursors produces the entire string, it may return either s or a copy of s; in some implementations, proper substrings may share memory with s. However, string-copy
+        /cursors always returns a newly allocated string. They differ from the R7RS procedures substring and string-copy by accepting either cursors or indexes.
+    string-take s nchars → string
+    string-drop s nchars → string
+    string-take-right s nchars → string
+    string-drop-right s nchars → string
+        string-take returns the first nchars of s; string-drop returns all but the first nchars of s. string-take-right returns the last nchars of s; string-drop-right
+        returns all but the last nchars of s. If these procedures produce the entire string, they may return either s or a copy of s; in some implementations, proper
+        substrings may share memory with s.
+
+        (string-take "Pete Szilagyi" 6) => "Pete S"
+        (string-drop "Pete Szilagyi" 6) => "zilagyi"
+
+        (string-take-right "Beta rules" 5) => "rules"
+        (string-drop-right "Beta rules" 5) => "Beta "
+
+        It is an error to take or drop more characters than are in the string:
+
+        (string-take "foo" 37) => error
+
+    string-pad s len [char start end] → string
+    string-pad-right s len [char start end] → string
+        Build a string of length len comprised of s padded on the left (right) by as many occurrences of the character char as needed. If s has more than len chars, it is
+        truncated on the left (right) to length len. Char defaults to #\space.
+
+        If len <= end-start, the returned value is allowed to share storage with s, or be exactly s (if len = end-start).
+
+        (string-pad     "325" 5) => "  325"
+        (string-pad   "71325" 5) => "71325"
+        (string-pad "8871325" 5) => "71325"
+
+    string-trim       s [pred start end] → string
+    string-trim-right s [pred start end] → string
+    string-trim-both  s [pred start end] → string
+        Trim s by skipping over all characters on the left / on the right / on both sides that satisfy the second parameter pred: pred defaults to char-whitespace?.
+
+        If no trimming occurs, these functions may return either s or a copy of s; in some implementations, proper substrings may share memory with s.
+
+        (string-trim-both "  The outlook wasn't brilliant,  \n\r")
+            => "The outlook wasn't brilliant,"
+
+    Prefixes & suffixes
+
+    string-prefix-length    s1 s2 [start1 end1 start2 end2] → integer
+    string-suffix-length    s1 s2 [start1 end1 start2 end2] → integer
+        Return the length of the longest common prefix/suffix of the two strings. For prefixes, this is equivalent to the "mismatch index" for the strings (modulo the
+        start cursors).
+
+        The optional start/end cursors or indexes restrict the comparison to the indicated substrings of s1 and s2.
+    string-prefix?    s1 s2 [start1 end1 start2 end2] → boolean
+    string-suffix?    s1 s2 [start1 end1 start2 end2] → boolean
+        Is s1 a prefix/suffix of s2?
+
+        The optional start/end cursors or indexes restrict the comparison to the indicated substrings of s1 and s2.
+
+    Searching
+
+    string-index s pred [start end] → cursor
+    string-index-right s pred [start end] → cursor
+    string-skip s pred [start end] → cursor
+    string-skip-right s pred [start end] → cursor
+        string-index searches through s from the left, returning the cursor of the first occurrence of a character which satisfies the predicate pred. If no match is
+        found, it returns end. string-index-right searches through s from the right, returning the cursor of the successor of the first occurrence of a character which
+        satisfies the predicate pred. If no match is found, it returns start.
+
+        The start and end parameters specify the beginning and end cursors or indexes of the search; the search includes the start, but not the end. Be careful of
+        "fencepost" considerations: when searching right-to-left, the first position considered is (string-cursor-prev end), whereas when searching left-to-right, the
+        first index considered is start. That is, the start/end indexes describe the same half-open interval [start,end) in these procedures that they do in all the other
+        SRFI 130 procedures.
+
+        The skip functions are similar, but use the complement of the criteria: they search for the first char that doesn't satisfy pred. E.g., to skip over initial
+        whitespace, say
+
+        (substring/cursors s (string-skip s char-whitespace?))
+
+        Note that the result is always a cursor, even when start and end are indexes. Use string-cursor->index to convert the result to an index. Therefore, these four
+        functions are not entirely compatible with their SRFI 13 counterparts, which return #f on failure.
+
+        These functions can be trivially composed with string-take and string-drop to produce take-while, drop-while, span, and break procedures without loss of
+        efficiency.
+
+    string-contains s1 s2 [start1 end1 start2 end2] → cursor
+    string-contains-right s1 s2 [start1 end1 start2 end2] → cursor
+        Does string s1 contain string s2?
+
+        Returns the cursor in s1 referring to the first character of the first/last instance of s2 as a substring, or #f if there is no match. The optional start/end
+        indexes restrict the operation to the indicated substrings.
+
+        The returned cursor is in the range [start1,end1). A successful match must lie entirely in the [start1,end1) range of s1.
+
+        Note that the result is always a cursor, even when start1 and end1 are indexes.
+        Use string-cursor->index to convert a cursor result to an index.
+
+        (string-contains "eek -- what a geek." "ee"
+                         12 18) ; Searches "a geek"
+            => {Cursor 15}
+
+        The name of this procedure does not end with a question mark -- this is to indicate that it does not return a simple boolean (#t or #f). Rather, it returns either
+        false (#f) or a cursor.
+
+    The whole string
+
+    string-reverse  s [start end] -> string
+        Reverse the string.
+
+        string-reverse returns the result string and does not alter its s parameter.
+
+        (string-reverse "Able was I ere I saw elba.")
+            => ".able was I ere I saw elbA"
+        (string-reverse "Who stole the spoons?" 14 20)
+            => "snoops"
+
+        Unicode note: Reversing a string simply reverses the sequence of code-points it contains. So a combining diacritic a coming after a base character b in string s
+        would come out before b in the reversed result.
+    string-concatenate string-list → string
+        Append the elements of string-list together into a single string. Guaranteed to return a freshly allocated string.
+
+        Note that the (apply string-append string-list) idiom is not robust for long lists of strings, as some Scheme implementations limit the number of arguments that
+        may be passed to an n-ary procedure.
+    string-concatenate-reverse string-list [final-string end] → string
+        With no optional arguments, this function is equivalent to
+
+        (string-concatenate (reverse string-list))
+
+        If the optional argument final-string is specified, it is consed onto the beginning of string-list before performing the list-reverse and string-concatenate
+        operations.
+
+        If the optional argument end is given, only the characters up to but not including end in final-string are added to the result, thus producing
+
+        (string-concatenate
+          (reverse (cons (substring final-string
+                                    (string-cursor-start final-string)
+                                    end)
+                         string-list)))
+
+        E.g.
+
+        (string-concatenate-reverse '(" must be" "Hello, I") " going.XXXX" 7)
+          => "Hello, I must be going."
+
+        This procedure is useful in the construction of procedures that accumulate character data into lists of string buffers, and wish to convert the accumulated data
+        into a single string when done.
+    string-fold kons knil s [start end] → value
+    string-fold-right kons knil s [start end] → value
+        These are the fundamental iterators for strings.
+
+        The left-fold operator maps the kons procedure across the string from left to right
+
+        (... (kons s[2] (kons s[1] (kons s[0] knil))))
+
+        In other words, string-fold obeys the (tail) recursion
+
+        (string-fold kons knil s start end) =
+            (string-fold kons (kons s[start] knil) start+1 end)
+
+        The right-fold operator maps the kons procedure across the string from right to left
+
+        (kons s[0] (... (kons s[end-3] (kons s[end-2] (kons s[end-1] knil)))))
+
+        obeying the (tail) recursion
+
+        (string-fold-right kons knil s start end) =
+            (string-fold-right kons (kons s[end-1] knil) start end-1)
+
+        Examples:
+
+        ;;; Convert a string to a list of chars.
+        (string-fold-right cons '() s)
+
+        ;;; Count the number of lower-case characters in a string.
+        (string-fold (lambda (c count)
+                       (if (char-lower-case? c)
+                           (+ count 1)
+                           count))
+                     0
+                     s)
+
+        ;;; Double every backslash character in S.
+        (let* ((ans-len (string-fold (lambda (c sum)
+                                       (+ sum (if (char=? c #\\) 2 1)))
+                                     0 s))
+               (ans (make-string ans-len)))
+          (string-fold (lambda (c i)
+                         (let ((i (if (char=? c #\\)
+                                      (begin (string-set! ans i #\\) (+ i 1))
+                                      i)))
+                           (string-set! ans i c)
+                           (+ i 1)))
+                       0 s)
+          ans)
+
+        The right-fold combinator is sometimes called a "catamorphism."
+    string-for-each-cursor proc s [start end] → unspecified
+        Apply proc to each cursor of s, in order, excluding the post-end cursor. The optional start/end pairs restrict the endpoints of the loop. This is simply a method
+        of looping over a string that is guaranteed to be safe and correct. Example:
+
+        (let ((s "abcde") (v '()))
+          (string-for-each-cursor
+            (lambda (cur) (set! v (cons (char->integer (string-ref/cursor s cur)) v)))
+            s)
+          v) => (101 100 99 98 97)
+
+    string-replicate s from to [start end] → string
+        This is an "extended substring" procedure that implements replicated copying of a substring of some string.
+
+        S is a string; start and end are optional arguments that demarcate a substring of s, defaulting to 0 and the length of s (i.e., the whole string). Replicate this
+        substring up and down index space, in both the positive and negative directions. For example, if s = "abcdefg", start=3, and end=6, then we have the conceptual
+        bidirectionally-infinite string
+
+        ...  d  e  f  d  e  f  d  e  f d  e  f  d  e  f  d  e  f  d ...
+        ... -9 -8 -7 -6 -5 -4 -3 -2 -1 0 +1 +2 +3 +4 +5 +6 +7 +8 +9 ...
+
+        string-replicate returns the substring of this string beginning at index from, and ending at to. Note that these arguments cannot be cursors. It is an error if
+        from is greater than to.
+
+        You can use string-replicate to perform a variety of tasks:
+          o To rotate a string left: (string-replicate "abcdef" 2 8) => "cdefab"
+          o To rotate a string right: (string-replicate "abcdef" -2 4) => "efabcd"
+          o To replicate a string: (string-replicate "abc" 0 7) => "abcabca"
+
+        Note that
+          o The from/to indexes give a half-open range -- the characters from index from up to, but not including, index to.
+          o The from/to indexes are not in terms of the index space for string s. They are in terms of the replicated index space of the substring defined by s, start, and
+            end.
+
+        It is an error if start=end -- although this is allowed by special dispensation when from=to.
+
+        Compatibility note: string-replicate is identical to the xsubstring procedure of SRFI 13, except that the to argument is required.
+    string-count s pred [start end] → integer
+        Return a count of the number of characters in s that satisfy the pred argument.
+    string-replace s1 s2 start1 end1 [start2 end2] → string
+        Returns
+
+        (string-append (substring/cursors s1 (string-cursor-start s1) start1)
+                       (substring/cursors s2 start2 end2)
+                       (substring/cursors s1 end1 (string-cursor-end s1)))
+
+        That is, the segment of characters in s1 from start1 to end1 is replaced by the segment of characters in s2 from start2 to end2. If start1=end1, this simply
+        splices the s2 characters into s1 at the specified index.
+
+        Examples:
+
+        (string-replace "The TCL programmer endured daily ridicule."
+                        "another miserable perl drone" 4 7 8 22 ) =>
+            "The miserable perl programmer endured daily ridicule."
+
+        (string-replace "It's easy to code it up in Scheme." "lots of fun" 5 9) =>
+            "It's lots of fun to code it up in Scheme."
+
+        (define (string-insert s i t) (string-replace s t i i))
+
+        (string-insert "It's easy to code it up in Scheme." 5 "really ") =>
+            "It's really easy to code it up in Scheme."
+
+    string-split s delimiter [grammar limit start end] → list
+        Returns a list of the words contained in the substring of string from start (inclusive) to end (exclusive). Delimiter specifies a string that is to be used as the
+        word separator. This will often be a single character, but multiple characters are allowed for cases like splitting on "\r\n". The returned list will then have one
+        more item than the number of non-overlapping occurrences of the delimiter in the string. If delimiter is an empty string, then the returned list contains a list of
+        strings, each of which contains a single character.
+
+        Grammar is a symbol with the same meaning as in the string-join procedure. If it is infix, which is the default, processing is done as described above, except that
+        an empty s produces the empty list; if it is strict-infix, an empty s signals an error. The values prefix and suffix cause a leading/trailing empty string in the
+        result to be suppressed.
+
+        If limit is a non-negative exact integer, at most that many splits occur, and the remainder of string is returned as the final element of the list (thus, the
+        result will have at most limit+1 elements). If limit is not specified or is #f, then as many splits as possible are made. It is an error if limit is any other
+        value.
+
+        Use SRFI 115's regexp-split to split on a regular expression rather than a simple string.
+
+    string-filter pred s [start end] → string
+    string-remove pred s [start end] → string
+        Filter the string s, retaining only those characters that satisfy / do not satisfy pred.
+
+        If the string is unaltered by the filtering operation, these functions may return either s or a copy of s.
+
+        Compatibility note: string-remove is identical to the string-delete procedure of SRFI 13, but the name string-delete is inconsistent with the conventions of SRFI 1
+        and other SRFIs.
+
+    Sample implementation
+
+    This SRFI comes with a sample implementation, which can be found in the repository of this SRFI. It is a cut-down version of the sample implementation of SRFI 13, with
+    the addition of the cursor operations procedures, the */cursors procedures, string-contains-right, and string-split. Here are Olin's original implementation notes:
+
+        I have placed this source on the Net with an unencumbered, "open" copyright. The prefix/suffix and comparison routines in this code had (extremely distant) origins
+        in MIT Scheme's string lib, and were substantially reworked by myself. Being derived from that code, they are covered by the MIT Scheme copyright, which is a
+        generic BSD-style open-source copyright. See the source file for details.
+
+        The KMP string-search code was influenced by implementations written by Stephen Bevan, Brian Denheyer and Will Fitzgerald. However, this version was written from
+        scratch by myself.
+
+        The remainder of the code was written by myself for scsh or for this SRFI; I have placed this code under the scsh copyright, which is also a generic BSD-style
+        open-source copyright.
+
+        The code is written for portability and should be straightforward to port to any Scheme. The source comments contains detailed notes describing the non-R5RS
+        dependencies.
+
+        The library is written for clarity and well-commented. Fast paths are provided for common cases. This is not to say that the implementation can't be tuned up for a
+        specific Scheme implementation. There are notes in the comments addressing ways implementors can tune the reference implementation for performance.
+
+        In short, I've written the reference implementation to make it as painless as possible for an implementor -- or a regular programmer -- to adopt this library and get
+        good results with it.
+
+    Another implementation, derived from Chibi Scheme's SRFI 130, is present in the foof subdirectory. This implementation is smaller but may be slower. It can be more
+    easily adapted to Schemes that differentiate between indexes and cursors.
+
+    Acknowledgements
+
+    Thanks to the members of the SRFI 130 mailing list who made this SRFI what it now is, including Per Bothner, Arthur Gleckler, Shiro Kawai, Jim Rees, and especially
+    Alex Shinn, whose idea it was to make cursors and indexes disjoint, and who provided the foof implementation. The following acknowledgements by Olin Shivers are taken
+    from SRFI 13:
+
+        The design of this library benefited greatly from the feedback provided during the SRFI discussion phase. Among those contributing thoughtful commentary and
+        suggestions, both on the mailing list and by private discussion, were Paolo Amoroso, Lars Arvestad, Alan Bawden, Jim Bender, Dan Bornstein, Per Bothner, Will
+        Clinger, Brian Denheyer, Mikael Djurfeldt, Kent Dybvig, Sergei Egorov, Marc Feeley, Matthias Felleisen, Will Fitzgerald, Matthew Flatt, Arthur A. Gleckler, Ben
+        Goetter, Sven Hartrumpf, Erik Hilsdale, Richard Kelsey, Oleg Kiselyov, Bengt Kleberg, Donovan Kolbly, Bruce Korb, Shriram Krishnamurthi, Bruce Lewis, Tom Lord,
+        Brad Lucier, Dave Mason, David Rush, Klaus Schilling, Jonathan Sobel, Mike Sperber, Mikael Staldal, Vladimir Tsyshevsky, Donald Welsh, and Mike Wilson. I am
+        grateful to them for their assistance.
+
+        I am also grateful to the authors, implementors and documentors of all the systems mentioned in the introduction. Aubrey Jaffer and Kent Pitman should be noted for
+        their work in producing Web-accessible versions of the R5RS and Common Lisp spec, which was a tremendous aid.
+
+        This is not to imply that these individuals necessarily endorse the final results, of course.
+
+        During this document's long development period, great patience was exhibited by Mike Sperber, who is the editor for the SRFI, and by Hillary Sullivan, who is not.
+
+    References & links
+
+    [CommonLisp]
+        Common Lisp: the Language.
+        Guy L. Steele Jr. (editor).
+        Digital Press, Maynard, Mass., second edition 1990.
+        Available at http://www.elwood.com/alu/table/references.htm#cltl2.
+
+        The Common Lisp "HyperSpec," produced by Kent Pitman, is essentially the ANSI spec for Common Lisp:
+        http://www.lispworks.com/documentation/HyperSpec/Front/index.htm.
+    [MIT-Scheme]
+        http://www.swiss.ai.mit.edu/projects/scheme/
+    [R5RS]
+        Revised^5 report on the algorithmic language Scheme.
+        R. Kelsey, W. Clinger, J. Rees (editors).
+        Higher-Order and Symbolic Computation, Vol. 11, No. 1, September, 1998.
+        and ACM SIGPLAN Notices, Vol. 33, No. 9, October, 1998.
+        Available at http://www.schemers.org/Documents/Standards/.
+    [R7RS]
+        Revised^7 report on the algorithmic language Scheme.
+        A. Shinn, J. Cowan, A. Gleckler (editors).
+        Available at http://r7rs.org.
+    [SRFI]
+        The SRFI web site.
+        http://srfi.schemers.org/
+    [SRFI-13]
+        SRFI-13: String libraries.
+        http://srfi.schemers.org/srfi-13/
+    [SRFI-14]
+        SRFI-14: Character-set library.
+        http://srfi.schemers.org/srfi-14/
+        The SRFI 14 char-set library defines a character-set data type, which is used by some procedures in this library.
+
+    Copyright
+
+    Copyright (C) Olin Shivers (1998, 1999, 2000) and John Cowan (2016).
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the
+    Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
+    and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+    PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+    CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+    Editor: Arthur A. Gleckler
