@@ -1,30 +1,5 @@
-Title
-
-Cursor-based string library
-
-Author
-
-John Cowan
-
-Status
-
-This SRFI is currently in final status. Here is an explanation of each status that a SRFI can hold. To provide input on this SRFI, please send email to srfi-130@nospam
-srfi.schemers.org. To subscribe to the list, follow these instructions. You can access previous messages via the mailing list archive.
-
-  * Received: 2015-12-02
-  * 60-day deadline: 2016-02-01
-  * Draft #1 published: 2015-12-03
-  * Draft #2 published: 2015-12-13
-  * Draft #3 published: 2016-03-28
-  * Draft #4 published: 2016-04-12
-  * Draft #5 published: 2016-05-14
-  * Draft #6 published: 2016-05-14
-  * Draft #7 published: 2016-05-22
-  * Draft #8 published: 2016-05-23 (code changes only)
-  * Finalized: 2016-05-08
-
-Table of contents
-
+* SRFI-130: Cursor-based string library
+** Table of contents
   * Abstract
   * Procedure index
   * Rationale
@@ -47,19 +22,12 @@ Table of contents
       + Acknowledgements
       + References & Links
       + Copyright
+** Abstract
+R5RS Scheme has an impoverished set of string-processing utilities, which is a problem for authors of portable code. Although R7RS provides some extensions and improvements, it is still very incomplete. This SRFI proposes a coherent and comprehensive set of string-processing procedures; it is accompanied by a portable sample implementation of the spec.
 
-    Abstract
-
-    R5RS Scheme has an impoverished set of string-processing utilities, which is a problem for authors of portable code. Although R7RS provides some extensions and
-    improvements, it is still very incomplete. This SRFI proposes a coherent and comprehensive set of string-processing procedures; it is accompanied by a portable sample
-    implementation of the spec.
-
-    This SRFI is derived from SRFI 13. The biggest difference is that it allows subsequences of strings to be specified by cursors as well as the traditional string
-    indexes. In addition, it omits the comparison, case-mapping, and mutation operations of SRFI 13, as well as all procedures already present in R7RS.
-
-    Procedure Index
-
-    Here is a list of the procedures provided by this SRFI.
+This SRFI is derived from SRFI 13. The biggest difference is that it allows subsequences of strings to be specified by cursors as well as the traditional string indexes. In addition, it omits the comparison, case-mapping, and mutation operations of SRFI 13, as well as all procedures already present in R7RS.
+** Procedure Index
+Here is a list of the procedures provided by this SRFI.
 
     Cursor operations
 
@@ -117,12 +85,8 @@ Table of contents
         string-replicate    string-count
         string-replace      string-split
         string-filter       string-remove
-
-    Rationale
-
-    This SRFI defines a rich set of operations for manipulating strings. These are frequently useful for scripting and other text-manipulation applications. The library's
-    design was influenced by the string libraries found in MIT Scheme, Gambit, RScheme, MzScheme, SLIB, Common Lisp, Bigloo, Guile, Chez, APL, Java, and the SML standard
-    basis. All functionality is available in substring and full-string forms.
+** Rationale
+This SRFI defines a rich set of operations for manipulating strings. These are frequently useful for scripting and other text-manipulation applications. The library's design was influenced by the string libraries found in MIT Scheme, Gambit, RScheme, MzScheme, SLIB, Common Lisp, Bigloo, Guile, Chez, APL, Java, and the SML standard basis. All functionality is available in substring and full-string forms.
 
     When SRFI 13 was defined in 1999, it was intended to provide efficient string operations on both whole strings and substrings. At that time, it was normal for strings
     to be sequences of 8-bit characters, or in a few cases, characters of other fixed lengths. Consequently, many of the SRFI 13 procedures accept optional exact integer
@@ -153,11 +117,8 @@ Table of contents
 
     In short, this SRFI is intended to help move the practice of Scheme programming away from mutable strings, string indexes, and SRFI 13, while largely maintaining
     backward compatibility. It does not require any particular run-time efficiencies from its procedures.
-
-    Specification
-
-    String cursors
-
+** Specification
+*** String cursors
     While indexes are exact integers ranging from 0 to the length of the string they refer to, cursors are opaque objects that point into strings. However, they are not
     required to belong to a disjoint type, as long as they are either disjoint from indexes or identical to indexes. For example, they may be negative exact integers
     representing indexes into a byte array underlying the string. It is also possible to implement cursors as a record type or an implementation-specific primitive type.
@@ -171,14 +132,10 @@ Table of contents
     character, known as the "post-end cursor". The cursor for the first (or zeroth) position in the string is known as the "start cursor". The post-end cursor is provided
     because when creating a string from cursors the second cursor argument is exclusive. It is an error if a cursor argument is not one of the valid cursors for the string
     argument. The index analogue of the post-end cursor is n.
-
-    Calling predicates
-
+*** Calling predicates
     All predicates passed to procedures defined in this SRFI may be called in any order and any number of times, except as otherwise noted. This is not the case in SRFI
     13.
-
-    Shared storage
-
+*** Shared storage
     Some Scheme implementations, e.g. Guile, provide ways to construct substrings that share storage with other strings. SRFI 130 provides only minimal support for such
     shared substrings. The following SRFI 130 procedures are allowed to return a result which shares storage with one or more of their string arguments:
 
@@ -192,20 +149,15 @@ Table of contents
     In particular, if the result is the same (in the sense of string=?) as any of the arguments, any implementation of the above procedures may return the string argument
     without copying it. Other procedures such as string-copy/cursors, as well as all the R7RS procedures, are not permitted to return shared results. If a shared value is
     returned, it may be mutable or immutable.
-
-    Naming conventions
-
+*** Naming conventions
     The procedures of this SRFI follow a consistent naming scheme, and are consistent with the conventions developed in SRFI 1. The names are composed of smaller lexemes
     in a regular way that exposes the structure and relationships between the procedures. This should help the programmer to recall or reconstitute the name of the desired
     procedure. In particular, the order of common parameters is consistent across the different procedures.
 
     Procedures that have left/right directional variants use no suffix to specify left-to-right operation, -right to specify right-to-left operation, and -both to specify
     both. This is a general convention that has been established in other SRFIs; the value of a convention is proportional to the extent of its use.
-
-Notation
-
-In the following procedure specifications:
-
+*** Notation
+**** In the following procedure specifications:
   * An s parameter is a string.
   * A char parameter is a character.
   * Start and end parameters are half-open string cursors or indexes specifying a substring within a string parameter, and typically restrict a procedure's action to the
@@ -240,11 +192,8 @@ takes two required parameters (doc and dict[1]) and zero or more optional parame
 
 If a procedure's return value is said to be "unspecified," this means that the procedure returns a single arbitrary value. Such a procedure is not even required to be
 consistent from call to call.
-
-Procedures
-
-Cursor operations
-
+**** Procedures
+***** Cursor operations
 These procedures are mostly taken from Chibi Scheme.
 
 string-cursor? obj → boolean
@@ -273,9 +222,7 @@ string-cursor? obj → boolean
     string-cursor->index s cursor → index
     string-index->cursor s index → cursor
         Converts a cursor/index into s into the corresponding index/cursor. If the argument is already an index/cursor, it is returned unchanged.
-
-    Predicates
-
+***** Predicates
     string-null? s → boolean
         Is s the empty string?
     string-every pred s [start end] → value
@@ -286,9 +233,7 @@ string-cursor? obj → boolean
             an empty sequence of characters, it simply returns #t.
 
         The names of these procedures do not end with a question mark -- this is to indicate that they do not return a simple boolean (#t or #f), but a general value.
-
-    Constructors
-
+***** Constructors
     string-tabulate proc len → string
         Proc is an integer → char procedure. Construct a string of size len by applying proc to each value from 0 (inclusive) to len (exclusive) to produce the
         corresponding string element. The order in which proc is applied to the indexes is not specified.
@@ -341,9 +286,7 @@ string-cursor? obj → boolean
     string-unfold-right stop? mapper successor seed [base make-final] → string
         This is a fundamental constructor for strings. It is equivalent to string-unfold, except that the results of mapper are assembled into the string in a
         right-to-left order, base is the optional rightmost portion of the constructed string, and make-final produces the leftmost portion of the constructed string.
-
-    Conversion
-
+***** Conversion
     string->list/cursors s [start end] → char-list
     string->vector/cursors s [start end] → char-vector
         string->list/cursors and string->vector/cursors return a newly allocated list or vector of the characters that make up the given string. They differ from the R7RS
@@ -376,9 +319,7 @@ string-cursor? obj → boolean
         ;; but suffix & prefix grammars are not.
         (string-join '()   ":" 'suffix) => ""
         (string-join '("") ":" 'suffix) => ":"
-
-    Selection
-
+***** Selection
     string-ref/cursor s cursor → char
         Returns character s[i] using a valid cursor or index of s. It differs from the R7RS procedure string-ref by accepting either a cursor or an index.
     substring/cursors s start end → string
@@ -424,9 +365,7 @@ string-cursor? obj → boolean
 
         (string-trim-both "  The outlook wasn't brilliant,  \n\r")
             => "The outlook wasn't brilliant,"
-
-    Prefixes & suffixes
-
+***** Prefixes & suffixes
     string-prefix-length    s1 s2 [start1 end1 start2 end2] → integer
     string-suffix-length    s1 s2 [start1 end1 start2 end2] → integer
         Return the length of the longest common prefix/suffix of the two strings. For prefixes, this is equivalent to the "mismatch index" for the strings (modulo the
@@ -438,9 +377,7 @@ string-cursor? obj → boolean
         Is s1 a prefix/suffix of s2?
 
         The optional start/end cursors or indexes restrict the comparison to the indicated substrings of s1 and s2.
-
-    Searching
-
+***** Searching
     string-index s pred [start end] → cursor
     string-index-right s pred [start end] → cursor
     string-skip s pred [start end] → cursor
@@ -483,9 +420,7 @@ string-cursor? obj → boolean
 
         The name of this procedure does not end with a question mark -- this is to indicate that it does not return a simple boolean (#t or #f). Rather, it returns either
         false (#f) or a cursor.
-
-    The whole string
-
+***** The whole string
     string-reverse  s [start end] -> string
         Reverse the string.
 
@@ -662,9 +597,7 @@ string-cursor? obj → boolean
 
         Compatibility note: string-remove is identical to the string-delete procedure of SRFI 13, but the name string-delete is inconsistent with the conventions of SRFI 1
         and other SRFIs.
-
-    Sample implementation
-
+***** Sample implementation
     This SRFI comes with a sample implementation, which can be found in the repository of this SRFI. It is a cut-down version of the sample implementation of SRFI 13, with
     the addition of the cursor operations procedures, the */cursors procedures, string-contains-right, and string-split. Here are Olin's original implementation notes:
 
@@ -689,9 +622,7 @@ string-cursor? obj → boolean
 
     Another implementation, derived from Chibi Scheme's SRFI 130, is present in the foof subdirectory. This implementation is smaller but may be slower. It can be more
     easily adapted to Schemes that differentiate between indexes and cursors.
-
-    Acknowledgements
-
+***** Acknowledgements
     Thanks to the members of the SRFI 130 mailing list who made this SRFI what it now is, including Per Bothner, Arthur Gleckler, Shiro Kawai, Jim Rees, and especially
     Alex Shinn, whose idea it was to make cursors and indexes disjoint, and who provided the foof implementation. The following acknowledgements by Olin Shivers are taken
     from SRFI 13:
@@ -709,9 +640,7 @@ string-cursor? obj → boolean
         This is not to imply that these individuals necessarily endorse the final results, of course.
 
         During this document's long development period, great patience was exhibited by Mike Sperber, who is the editor for the SRFI, and by Hillary Sullivan, who is not.
-
-    References & links
-
+***** References & links
     [CommonLisp]
         Common Lisp: the Language.
         Guy L. Steele Jr. (editor).
@@ -742,21 +671,13 @@ string-cursor? obj → boolean
         SRFI-14: Character-set library.
         http://srfi.schemers.org/srfi-14/
         The SRFI 14 char-set library defines a character-set data type, which is used by some procedures in this library.
+** Author
+John Cowan, ported and packaged to Chicken 5 by Sergey Goldgaber
+** Copyright
+Copyright (C) Olin Shivers (1998, 1999, 2000) and John Cowan (2016).
 
-    Copyright
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-    Copyright (C) Olin Shivers (1998, 1999, 2000) and John Cowan (2016).
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the
-    Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software,
-    and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-    The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
-    PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
-    CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-    -----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-    Editor: Arthur A. Gleckler
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
