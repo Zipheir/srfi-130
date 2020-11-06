@@ -1,15 +1,12 @@
 (module srfi-130 ()
-  (import (except (scheme base)
-                  string-map
-                  string-for-each))
-  (import (scheme char))
-  (import (scheme cxr))
-  (export string-cursor? string-ref/cursor)
-  (export string-cursor-start string-cursor-end
+  (import scheme)
+  (import (only (chicken base) include error))
+  (import (chicken module))
+  (export string-cursor? string-cursor-start string-cursor-end
           string-cursor-prev string-cursor-next
           string-cursor-forward string-cursor-back
           string-cursor=? string-cursor<? string-cursor>?
-          string-cursor<=? string-cursor>=?
+          string-cursor<=? string-cursor>?
           string-cursor-diff string-cursor->index string-index->cursor)
   (export string-null? string-every string-any)
   (export string-tabulate string-unfold string-unfold-right)
@@ -29,5 +26,4 @@
           string-split string-filter string-remove)
   (include "srfi-130/macros.scm")
   (include "srfi-130/portable.scm")
-  (include "srfi-130/srfi-130.scm")
 )
