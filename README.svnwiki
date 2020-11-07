@@ -59,12 +59,12 @@ The operations provided here are entirely independent of the character repertoir
 
 Many SRFI 13 procedures accept either a predicate, a single character, or a [[https://srfi.schemers.org/srfi-14/srfi-14.html|SRFI 14]] character set. In this SRFI, only support for predicates is required, though implementations may also support the other two alternatives. In that case, a single character is interpreted as a predicate which returns true if its argument is the same (in the sense of eqv?) to that character; a character set is interpreted as a predicate which returns true if its argument belongs to that character set. In SRFI 13, character sets are inherently more efficient than predicates [[https://srfi.schemers.org/srfi-13/mail-archive/msg00052.html|because testing them is fast and free of side effects]], though how fast character sets actually are if they support full Unicode is very implementation-dependent. The only procedure that absolutely requires character set support, string-tokenize, has been replaced here by the more usual string-split procedure provided by Perl, Python, Java, JavaScript, and other languages.
 
-The search procedures in SRFI 13 return either an index or #f if the search fails. Their counterparts in this SRFI return cursors. Left-to-right searches return a cursor representing the leftmost matching character, or the post-end cursor if there is no match; right-to-left searches return a cursor representing the successor of the rightmost matching character, or the start cursor if there is no match. This convention was devised by Alan Watson and implemented in Chibi Scheme.
+The search procedures in SRFI 13 return either an index or {{#f}} if the search fails. Their counterparts in this SRFI return cursors. Left-to-right searches return a cursor representing the leftmost matching character, or the post-end cursor if there is no match; right-to-left searches return a cursor representing the successor of the rightmost matching character, or the start cursor if there is no match. This convention was devised by Alan Watson and implemented in Chibi Scheme.
 
 In short, this SRFI is intended to help move the practice of Scheme programming away from mutable strings, string indexes, and SRFI 13, while largely maintaining backward compatibility. It does not require any particular run-time efficiencies from its procedures.
 === Specification
 ==== String cursors
-While indexes are exact integers ranging from 0 to the length of the string they refer to, cursors are opaque objects that point into strings. However, they are not required to belong to a disjoint type, as long as they are either disjoint from indexes or identical to indexes. For example, they may be negative exact integers representing indexes into a byte array underlying the string. It is also possible to implement cursors as a record type or an implementation-specific primitive type. Additionally, in implementations where no provision has been made for cursors, or there is no benefit in implementing them separately because strings are in fact arrays of fixed-length characters, it is useful to allow indexes and cursors to be the same thing. (Cursors must also be disjoint from #f.)
+While indexes are exact integers ranging from 0 to the length of the string they refer to, cursors are opaque objects that point into strings. However, they are not required to belong to a disjoint type, as long as they are either disjoint from indexes or identical to indexes. For example, they may be negative exact integers representing indexes into a byte array underlying the string. It is also possible to implement cursors as a record type or an implementation-specific primitive type. Additionally, in implementations where no provision has been made for cursors, or there is no benefit in implementing them separately because strings are in fact arrays of fixed-length characters, it is useful to allow indexes and cursors to be the same thing. (Cursors must also be disjoint from {{#f}}.)
 
 It is an error to make any use of a cursor referring to a string after the string, or any string that shares storage with it, has been mutated by a procedure like string-set!, string-copy!, or string-fill!.
 
@@ -121,7 +121,7 @@ Such a procedure is not even required to be consistent from call to call.
 ===== Cursor operations
 These procedures are mostly taken from Chibi Scheme.
 ====== string-cursor? obj → boolean
-Returns #t if obj can be a string cursor, and #f otherwise. In implementations where cursors and indexes are the same thing, #t is returned on any cursor or index; where they are disjoint, #t is returned on cursors, #f on indexes. If obj is neither a cursor nor an index, string-cursor? will always return #f.
+Returns {{#t}} if {{obj}} can be a string cursor, and {{#f}} otherwise. In implementations where cursors and indexes are the same thing, {{#t}} is returned on any cursor or index; where they are disjoint, {{#t}} is returned on cursors, {{#f}} on indexes. If obj is neither a cursor nor an index, string-cursor? will always return {{#f}}.
 ====== string-cursor-start s → cursor
 ====== string-cursor-end s → cursor
 Returns the start/post-end cursor of s respectively.
@@ -151,8 +151,8 @@ Checks to see if every/any character in s satisfies pred proceeding from left (i
 ======= The predicate is "witness-generating":
 * If string-any returns true, the returned true value is the one produced by the application of the predicate.
 * If string-every returns true, the returned true value is the one produced by the final application of the predicate to s[end-1].
-If string-every is applied to an empty sequence of characters, it simply returns #t.
-======= The names of these procedures do not end with a question mark -- this is to indicate that they do not return a simple boolean (#t or #f), but a general value.
+If string-every is applied to an empty sequence of characters, it simply returns {{#t}}.
+======= The names of these procedures do not end with a question mark -- this is to indicate that they do not return a simple boolean ({{#t}} or {{#f}}), but a general value.
 ===== Constructors
 ====== string-tabulate proc len → string
 * Proc is an integer → char procedure.
@@ -186,7 +186,7 @@ seed, (successor seed), (successor^2 seed), (successor^3 seed), ...
 ======= Interested functional programmers may enjoy noting that string-fold-right and string-unfold are in some sense inverses.
 ======== That is, given operations knull?, kar, kdr, kons, and knil satisfying
 <enscript highlight="scheme">
-(kons (kar x) (kdr x)) = x  and (knull? knil) = #t
+(kons (kar x) (kdr x)) = x  and (knull? knil) = {{#t}}
 </enscript>
 ======== then
 <enscript highlight="scheme">
@@ -314,14 +314,14 @@ The skip functions are similar, but use the complement of the criteria: they sea
 (substring/cursors s (string-skip s char-whitespace?))
 </enscript>
 
-Note that the result is always a cursor, even when start and end are indexes. Use string-cursor->index to convert the result to an index. Therefore, these four functions are not entirely compatible with their SRFI 13 counterparts, which return #f on failure.
+Note that the result is always a cursor, even when start and end are indexes. Use string-cursor->index to convert the result to an index. Therefore, these four functions are not entirely compatible with their SRFI 13 counterparts, which return {{#f}} on failure.
 
 These functions can be trivially composed with string-take and string-drop to produce take-while, drop-while, span, and break procedures without loss of efficiency.
 ====== string-contains s1 s2 [start1 end1 start2 end2] → cursor
 ====== string-contains-right s1 s2 [start1 end1 start2 end2] → cursor
 Does string s1 contain string s2?
 
-Returns the cursor in s1 referring to the first character of the first/last instance of s2 as a substring, or #f if there is no match. The optional start/end indexes restrict the operation to the indicated substrings.
+Returns the cursor in s1 referring to the first character of the first/last instance of s2 as a substring, or {{#f}} if there is no match. The optional start/end indexes restrict the operation to the indicated substrings.
 
 The returned cursor is in the range [start1,end1). A successful match must lie entirely in the [start1,end1) range of s1.
 
@@ -333,7 +333,7 @@ Note that the result is always a cursor, even when start1 and end1 are indexes. 
     => {Cursor 15}
 </enscript>
 
-The name of this procedure does not end with a question mark -- this is to indicate that it does not return a simple boolean (#t or #f). Rather, it returns either false (#f) or a cursor.
+The name of this procedure does not end with a question mark -- this is to indicate that it does not return a simple boolean ({{#t}} or {{#f}}). Rather, it returns either false ({{#f}}) or a cursor.
 ===== The whole string
 ====== string-reverse  s [start end] -> string
 Reverse the string.
@@ -496,7 +496,7 @@ Returns a list of the words contained in the substring of string from start (inc
 
 Grammar is a symbol with the same meaning as in the string-join procedure. If it is infix, which is the default, processing is done as described above, except that an empty s produces the empty list; if it is strict-infix, an empty s signals an error. The values prefix and suffix cause a leading/trailing empty string in the result to be suppressed.
 
-If limit is a non-negative exact integer, at most that many splits occur, and the remainder of string is returned as the final element of the list (thus, the result will have at most limit+1 elements). If limit is not specified or is #f, then as many splits as possible are made. It is an error if limit is any other value.
+If limit is a non-negative exact integer, at most that many splits occur, and the remainder of string is returned as the final element of the list (thus, the result will have at most limit+1 elements). If limit is not specified or is {{#f}}, then as many splits as possible are made. It is an error if limit is any other value.
 
 Use SRFI 115's regexp-split to split on a regular expression rather than a simple string.
 ====== string-filter pred s [start end] → string
