@@ -156,18 +156,30 @@ If {{string-every}} is applied to an empty sequence of characters, it simply ret
 ===== Constructors
 ====== string-tabulate proc len → string
 * {{Proc}} is an integer → char procedure.
-* Construct a string of size {{len}} by applying {{proc}} to each value from 0 (inclusive) to len (exclusive) to produce the corresponding string element.
+* Construct a string of size {{len}} by applying {{proc}} to each value from {{0}} (inclusive) to {{len}} (exclusive) to produce the corresponding string element.
 * The order in which {{proc}} is applied to the indexes is not specified.
 * Note that the order of arguments is not the same as SRFI 1's list-tabulate, but is the same as tabulation functions in other SRFIs.
 When this discrepancy was discovered in SRFI 13, it was too late to change SRFI 1.
 ====== string-unfold stop? mapper successor seed [base make-final] → string
 * This is a fundamental constructor for strings.
-* Successor is used to generate a series of "seed" values from the initial seed:
-seed, (successor seed), (successor^2 seed), (successor^3 seed), ...
-* Stop? tells us when to stop -- when it returns true when applied to one of these seed values.
-* Mapper maps each seed value to the corresponding character in the result string. These chars are assembled into the string in a left-to-right order.
-* Base is the optional initial/leftmost portion of the constructed string; it defaults to the empty string "".
-* Make-final is applied to the terminal seed value (on which stop? returns true) to produce the final/rightmost portion of the constructed string. It defaults to (lambda (x) "").
+
+<parameter>Successor</parameter>
+is used to generate a series of "seed" values from the initial seed:
+
+ seed, (successor seed), (successor^2 seed), (successor^3 seed), ...
+
+<parameter>Stop?</parameter>
+tells us when to stop -- when it returns true when applied to one of these seed values.
+
+<parameter>Mapper</parameter>
+maps each seed value to the corresponding character in the result string. These chars are assembled into the string in a left-to-right order.
+
+<parameter>Base</parameter>
+is the optional initial/leftmost portion of the constructed string; it defaults to the empty string "".
+
+<parameter>Make-final</parameter>
+is applied to the terminal seed value (on which stop? returns true) to produce the final/rightmost portion of the constructed string. It defaults to (lambda (x) "").
+
 * string-unfold is a fairly powerful string constructor -- you can use it to convert a list to a string, read a port into a string, reverse a string, copy a string, and so forth.
 ====== Examples:
 <enscript highlight="scheme">
