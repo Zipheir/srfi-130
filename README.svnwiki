@@ -138,7 +138,7 @@ Returns the cursor into s which follows/precedes cursor by {{nchars}} characters
 ====== string-cursor>=? cursor[1] cursor[2] → boolean
 Compares two cursors or two indexes pointing into the same string.
 ====== string-cursor-diff s start end → nchars
-Returns the number of characters between {{start}} and {{end}} in string s. Note that the result is always non-negative if {{start}} and {{end}} are a valid start-end pair.
+Returns the number of characters between {{start}} and {{end}} in string s. Note that the result is always non-negative if {{start}} and {{end}} are a valid {{start-end}} pair.
 ====== string-cursor->index s cursor → index
 ====== string-index->cursor s index → cursor
 Converts a cursor/index into s into the corresponding index/cursor. If the argument is already an index/cursor, it is returned unchanged.
@@ -305,12 +305,12 @@ If no trimming occurs, these functions may return either s or a copy of s; in so
 ====== string-suffix-length    s1 s2 [start1 end1 start2 end2] → integer
 Return the length of the longest common prefix/suffix of the two strings. For prefixes, this is equivalent to the "mismatch index" for the strings (modulo the {{start}} cursors).
 
-The optional start/end cursors or indexes restrict the comparison to the indicated substrings of {{s1}} and {{s2}}.
+The optional {{start/end}} cursors or indexes restrict the comparison to the indicated substrings of {{s1}} and {{s2}}.
 
 ====== string-prefix?    s1 s2 [start1 end1 start2 end2] → boolean
 ====== string-suffix?    s1 s2 [start1 end1 start2 end2] → boolean
 Is {{s1}} a prefix/suffix of {{s2}}?
-======= The optional start/end cursors or indexes restrict the comparison to the indicated substrings of {{s1}} and {{s2}}.
+* The optional {{start/end}} cursors or indexes restrict the comparison to the indicated substrings of {{s1}} and {{s2}}.
 ===== Searching
 ====== string-index s pred [start end] → cursor
 ====== string-index-right s pred [start end] → cursor
@@ -318,7 +318,7 @@ Is {{s1}} a prefix/suffix of {{s2}}?
 ====== string-skip-right s pred [start end] → cursor
 string-index searches through s from the left, returning the cursor of the first occurrence of a character which satisfies the predicate {{pred}}. If no match is found, it returns {{end}}. string-index-right searches through s from the right, returning the cursor of the successor of the first occurrence of a character which satisfies the predicate {{pred}}. If no match is found, it returns start.
 
-The {{start}} and {{end}} parameters specify the beginning and end cursors or indexes of the search; the search includes the {{start}}, but not the {{end}}. Be careful of "fencepost" considerations: when searching right-to-left, the first position considered is (string-cursor-prev end), whereas when searching left-to-right, the first index considered is start. That is, the start/end indexes describe the same half-open interval [start,end) in these procedures that they do in all the other SRFI 130 procedures.
+The {{start}} and {{end}} parameters specify the beginning and end cursors or indexes of the search; the search includes the {{start}}, but not the {{end}}. Be careful of "fencepost" considerations: when searching right-to-left, the first position considered is (string-cursor-prev end), whereas when searching left-to-right, the first index considered is start. That is, the {{start/end}} indexes describe the same half-open interval {{[start,end)}} in these procedures that they do in all the other SRFI 130 procedures.
 
 The skip functions are similar, but use the complement of the criteria: they search for the first char that doesn't satisfy {{pred}}. E.g., to skip over initial whitespace, say
 
@@ -333,7 +333,7 @@ These functions can be trivially composed with string-take and string-drop to pr
 ====== string-contains-right s1 s2 [start1 end1 start2 end2] → cursor
 Does string {{s1}} contain string {{s2}}?
 
-Returns the cursor in {{s1}} referring to the first character of the first/last instance of {{s2}} as a substring, or {{#f}} if there is no match. The optional start/end indexes restrict the operation to the indicated substrings.
+Returns the cursor in {{s1}} referring to the first character of the first/last instance of {{s2}} as a substring, or {{#f}} if there is no match. The optional {{start/end}} indexes restrict the operation to the indicated substrings.
 
 The returned cursor is in the range [start1,end1). A successful match must lie entirely in the [start1,end1) range of {{s1}}.
 
@@ -449,7 +449,7 @@ obeying the (tail) recursion
 </enscript>
 ======= The right-fold combinator is sometimes called a "catamorphism."
 ====== string-for-each-cursor proc s [start end] → unspecified
-Apply {{proc}} to each cursor of s, in order, excluding the post-end cursor. The optional start/end pairs restrict the endpoints of the loop. This is simply a method of looping over a string that is guaranteed to be safe and correct. Example:
+Apply {{proc}} to each cursor of s, in order, excluding the post-end cursor. The optional {{start/end}} pairs restrict the endpoints of the loop. This is simply a method of looping over a string that is guaranteed to be safe and correct. Example:
 
 <enscript highlight="scheme">
 (let ((s "abcde") (v '()))
@@ -461,7 +461,7 @@ Apply {{proc}} to each cursor of s, in order, excluding the post-end cursor. The
 ====== string-replicate s from to [start end] → string
 This is an "extended substring" procedure that implements replicated copying of a substring of some string.
 
-S is a string; {{start}} and end are optional arguments that demarcate a substring of s, defaulting to 0 and the length of s (i.e., the whole string). Replicate this substring up and down index space, in both the positive and negative directions. For example, if s = "abcdefg", start=3, and end=6, then we have the conceptual bidirectionally-infinite string
+{{S}} is a string; {{start}} and {{end}} are optional arguments that demarcate a substring of s, defaulting to {{0}} and the length of {{s}} (i.e., the whole string). Replicate this substring up and down index space, in both the positive and negative directions. For example, if {{s = "abcdefg"}}, {{start=3}}, and {{end=6}}, then we have the conceptual bidirectionally-infinite string
 
  ...  d  e  f  d  e  f  d  e  f d  e  f  d  e  f  d  e  f  d ...
  ... -9 -8 -7 -6 -5 -4 -3 -2 -1 0 +1 +2 +3 +4 +5 +6 +7 +8 +9 ...
@@ -474,7 +474,7 @@ string-replicate returns the substring of this string beginning at index from, a
 ======= Note that
 * The from/to indexes give a half-open range -- the characters from index from up to, but not including, index to.
 * The from/to indexes are not in terms of the index space for string s. They are in terms of the replicated index space of the substring defined by s, {{start}}, and {{end}}.
-* It is an error if start=end -- although this is allowed by special dispensation when from=to.
+* It is an error if {{start=end}} -- although this is allowed by special dispensation when from=to.
 ======= Compatibility note:
 string-replicate is identical to the xsubstring procedure of SRFI 13, except that the to argument is required.
 ====== string-count s pred [start end] → integer
