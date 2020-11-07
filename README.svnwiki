@@ -280,9 +280,9 @@ If these procedures produce the entire string, they may return either {{s}} or a
 </enscript>
 ====== string-pad s len [char start end] → string
 ====== string-pad-right s len [char start end] → string
-Build a string of length {{len}} comprised of s padded on the left (right) by as many occurrences of the character char as needed. If s has more than {{len}} chars, it is truncated on the left (right) to length {{len}}. Char defaults to #\space.
+Build a string of length {{len}} comprised of s padded on the left (right) by as many occurrences of the character char as needed. If {{s}} has more than {{len}} chars, it is truncated on the left (right) to length {{len}}. Char defaults to {{#\space}}.
 
-If {{len}} <= end-start, the returned value is allowed to share storage with s, or be exactly s (if {{len}} = end-start).
+If {{len <= end-start}}, the returned value is allowed to share storage with {{s}}, or be exactly s (if {{len}} = end-start).
 
 <enscript highlight="scheme">
 (string-pad     "325" 5) => "  325"
@@ -292,9 +292,9 @@ If {{len}} <= end-start, the returned value is allowed to share storage with s, 
 ====== string-trim       s [pred start end] → string
 ====== string-trim-right s [pred start end] → string
 ====== string-trim-both  s [pred start end] → string
-Trim s by skipping over all characters on the left / on the right / on both sides that satisfy the second parameter {{pred}}: {{pred}} defaults to char-whitespace?.
+Trim {{s}} by skipping over all characters on the left / on the right / on both sides that satisfy the second parameter {{pred}}: {{pred}} defaults to char-whitespace?.
 
-If no trimming occurs, these functions may return either s or a copy of s; in some implementations, proper substrings may share memory with s.
+If no trimming occurs, these functions may return either {{s}} or a copy of {{s}}; in some implementations, proper substrings may share memory with {{s}}.
 
 <enscript highlight="scheme">
 (string-trim-both "  The outlook wasn't brilliant,  \n\r")
@@ -316,7 +316,7 @@ Is {{s1}} a prefix/suffix of {{s2}}?
 ====== string-index-right s pred [start end] → cursor
 ====== string-skip s pred [start end] → cursor
 ====== string-skip-right s pred [start end] → cursor
-string-index searches through s from the left, returning the cursor of the first occurrence of a character which satisfies the predicate {{pred}}. If no match is found, it returns {{end}}. string-index-right searches through s from the right, returning the cursor of the successor of the first occurrence of a character which satisfies the predicate {{pred}}. If no match is found, it returns start.
+string-index searches through {{s}} from the left, returning the cursor of the first occurrence of a character which satisfies the predicate {{pred}}. If no match is found, it returns {{end}}. string-index-right searches through {{s}} from the right, returning the cursor of the successor of the first occurrence of a character which satisfies the predicate {{pred}}. If no match is found, it returns start.
 
 The {{start}} and {{end}} parameters specify the beginning and end cursors or indexes of the search; the search includes the {{start}}, but not the {{end}}. Be careful of "fencepost" considerations: when searching right-to-left, the first position considered is (string-cursor-prev end), whereas when searching left-to-right, the first index considered is start. That is, the {{start/end}} indexes describe the same half-open interval {{[start,end)}} in these procedures that they do in all the other SRFI 130 procedures.
 
@@ -350,7 +350,7 @@ The name of this procedure does not end with a question mark -- this is to indic
 ====== string-reverse  s [start end] -> string
 Reverse the string.
 
-string-reverse returns the result string and does not alter its s parameter.
+{{string-reverse}} returns the result string and does not alter its {{s}} parameter.
 
 <enscript highlight="scheme">
 (string-reverse "Able was I ere I saw elba.")
@@ -359,7 +359,7 @@ string-reverse returns the result string and does not alter its s parameter.
     => "snoops"
 </enscript>
 
-Unicode note: Reversing a string simply reverses the sequence of code-points it contains. So a combining diacritic a coming after a base character b in string s would come out before b in the reversed result.
+Unicode note: Reversing a string simply reverses the sequence of code-points it contains. So a combining diacritic a coming after a base character {{b}} in string {{s}} would come out before {{b}} in the reversed result.
 ====== string-concatenate string-list → string
 Append the elements of string-list together into a single string. Guaranteed to return a freshly allocated string.
 
@@ -395,20 +395,20 @@ This procedure is useful in the construction of procedures that accumulate chara
 ====== string-fold-right kons knil s [start end] → value
 These are the fundamental iterators for strings.
 
-The left-fold operator maps the kons procedure across the string from left to right
+The left-fold operator maps the {{kons}} procedure across the string from left to right
 
 <enscript highlight="scheme">
 (... (kons s[2] (kons s[1] (kons s[0] knil))))
 </enscript>
 
-In other words, string-fold obeys the (tail) recursion
+In other words, {{string-fold}} obeys the (tail) recursion
 
 <enscript highlight="scheme">
 (string-fold kons knil s start end) =
     (string-fold kons (kons s[start] knil) start+1 end)
 </enscript>
 
-The right-fold operator maps the kons procedure across the string from right to left
+The {{right-fold}} operator maps the {{kons}} procedure across the string from right to left
 
 <enscript highlight="scheme">
 (kons s[0] (... (kons s[end-3] (kons s[end-2] (kons s[end-1] knil)))))
@@ -449,8 +449,9 @@ obeying the (tail) recursion
 </enscript>
 ======= The right-fold combinator is sometimes called a "catamorphism."
 ====== string-for-each-cursor proc s [start end] → unspecified
-Apply {{proc}} to each cursor of s, in order, excluding the post-end cursor. The optional {{start/end}} pairs restrict the endpoints of the loop. This is simply a method of looping over a string that is guaranteed to be safe and correct. Example:
+Apply {{proc}} to each cursor of s, in order, excluding the post-end cursor. The optional {{start/end}} pairs restrict the endpoints of the loop. This is simply a method of looping over a string that is guaranteed to be safe and correct.
 
+====== Example:
 <enscript highlight="scheme">
 (let ((s "abcde") (v '()))
   (string-for-each-cursor
@@ -466,19 +467,19 @@ This is an "extended substring" procedure that implements replicated copying of 
  ...  d  e  f  d  e  f  d  e  f d  e  f  d  e  f  d  e  f  d ...
  ... -9 -8 -7 -6 -5 -4 -3 -2 -1 0 +1 +2 +3 +4 +5 +6 +7 +8 +9 ...
 
-string-replicate returns the substring of this string beginning at index from, and ending at to. Note that these arguments cannot be cursors. It is an error if from is greater than to.
+string-replicate returns the substring of this string beginning at index {{from}}, and ending at {{to}}. Note that these arguments cannot be cursors. It is an error if {{from}} is greater than {{to}}.
 ======= You can use string-replicate to perform a variety of tasks:
 * To rotate a string left: (string-replicate "abcdef" 2 8) => "cdefab"
 * To rotate a string right: (string-replicate "abcdef" -2 4) => "efabcd"
 * To replicate a string: (string-replicate "abc" 0 7) => "abcabca"
 ======= Note that
 * The from/to indexes give a half-open range -- the characters from index from up to, but not including, index to.
-* The from/to indexes are not in terms of the index space for string s. They are in terms of the replicated index space of the substring defined by s, {{start}}, and {{end}}.
+* The from/to indexes are not in terms of the index space for string {{s}}. They are in terms of the replicated index space of the substring defined by {{s}}, {{start}}, and {{end}}.
 * It is an error if {{start=end}} -- although this is allowed by special dispensation when from=to.
 ======= Compatibility note:
-string-replicate is identical to the xsubstring procedure of SRFI 13, except that the to argument is required.
+{{string-replicate}} is identical to the {{xsubstring}} procedure of SRFI 13, except that the to argument is required.
 ====== string-count s pred [start end] → integer
-Return a count of the number of characters in s that satisfy the pred argument.
+Return a count of the number of characters in {{s}} that satisfy the {{pred}} argument.
 ====== string-replace s1 s2 start1 end1 [start2 end2] → string
 Returns
 
@@ -506,34 +507,34 @@ That is, the segment of characters in {{s1}} from {{start1}} to {{end1}} is repl
 ====== string-split s delimiter [grammar limit start end] → list
 Returns a list of the words contained in the substring of string from {{start}} (inclusive) to {{end}} (exclusive). Delimiter specifies a string that is to be used as the word separator. This will often be a single character, but multiple characters are allowed for cases like splitting on "\r\n". The returned list will then have one more item than the number of non-overlapping occurrences of the delimiter in the string. If delimiter is an empty string, then the returned list contains a list of strings, each of which contains a single character.
 
-Grammar is a symbol with the same meaning as in the string-join procedure. If it is infix, which is the default, processing is done as described above, except that an empty s produces the empty list; if it is strict-infix, an empty s signals an error. The values prefix and suffix cause a leading/trailing empty string in the result to be suppressed.
+Grammar is a symbol with the same meaning as in the {{string-join}} procedure. If it is infix, which is the default, processing is done as described above, except that an empty {{s}} produces the empty list; if it is strict-infix, an empty {{s}} signals an error. The values {{prefix}} and {{suffix}} cause a leading/trailing empty string in the result to be suppressed.
 
-If limit is a non-negative exact integer, at most that many splits occur, and the remainder of string is returned as the final element of the list (thus, the result will have at most limit+1 elements). If limit is not specified or is {{#f}}, then as many splits as possible are made. It is an error if limit is any other value.
+If {{limit}} is a non-negative exact integer, at most that many splits occur, and the remainder of string is returned as the final element of the list (thus, the result will have at most {{limit+1}} elements). If {{limit}} is not specified or is {{#f}}, then as many splits as possible are made. It is an error if {{limit}} is any other value.
 
 Use SRFI 115's regexp-split to split on a regular expression rather than a simple string.
 ====== string-filter pred s [start end] → string
 ====== string-remove pred s [start end] → string
-Filter the string s, retaining only those characters that satisfy / do not satisfy {{pred}}.
+Filter the string {{s}}, retaining only those characters that satisfy / do not satisfy {{pred}}.
 
 If the string is unaltered by the filtering operation, these functions may return either s or a copy of s.
 ======= Compatibility note:
-string-remove is identical to the string-delete procedure of SRFI 13, but the name string-delete is inconsistent with the conventions of SRFI 1 and other SRFIs.
+{{string-remove}} is identical to the {{string-delete}} procedure of SRFI 13, but the name {{string-delete}} is inconsistent with the conventions of SRFI 1 and other SRFIs.
 ===== Sample implementation
-This SRFI comes with a sample implementation, which can be found in the repository of this SRFI. It is a cut-down version of the sample implementation of SRFI 13, with the addition of the cursor operations procedures, the */cursors procedures, string-contains-right, and string-split. Here are Olin's original implementation notes:
+This SRFI comes with a sample implementation, which can be found in the repository of this SRFI. It is a cut-down version of the sample implementation of SRFI 13, with the addition of the cursor operations procedures, the {{*/cursors}} procedures, {{string-contains-right}}, and {{string-split}}. Here are Olin's original implementation notes:
 
-I have placed this source on the Net with an unencumbered, "open" copyright. The prefix/suffix and comparison routines in this code had (extremely distant) origins in MIT Scheme's string lib, and were substantially reworked by myself. Being derived from that code, they are covered by the MIT Scheme copyright, which is a generic BSD-style open-source copyright. See the source file for details.
+''I have placed this source on the Net with an unencumbered, "open" copyright. The prefix/suffix and comparison routines in this code had (extremely distant) origins in MIT Scheme's string lib, and were substantially reworked by myself. Being derived from that code, they are covered by the MIT Scheme copyright, which is a generic BSD-style open-source copyright. See the source file for details.''
 
-The KMP string-search code was influenced by implementations written by Stephen Bevan, Brian Denheyer and Will Fitzgerald. However, this version was written from scratch by myself.
+''The KMP string-search code was influenced by implementations written by Stephen Bevan, Brian Denheyer and Will Fitzgerald. However, this version was written from scratch by myself.''
 
-The remainder of the code was written by myself for scsh or for this SRFI; I have placed this code under the scsh copyright, which is also a generic BSD-style open-source copyright.
+''The remainder of the code was written by myself for scsh or for this SRFI; I have placed this code under the scsh copyright, which is also a generic BSD-style open-source copyright.''
 
-The code is written for portability and should be straightforward to port to any Scheme. The source comments contains detailed notes describing the non-R5RS dependencies.
+''The code is written for portability and should be straightforward to port to any Scheme. The source comments contains detailed notes describing the non-R5RS dependencies.''
 
-The library is written for clarity and well-commented. Fast paths are provided for common cases. This is not to say that the implementation can't be tuned up for a specific Scheme implementation. There are notes in the comments addressing ways implementors can tune the reference implementation for performance.
+''The library is written for clarity and well-commented. Fast paths are provided for common cases. This is not to say that the implementation can't be tuned up for a specific Scheme implementation. There are notes in the comments addressing ways implementors can tune the reference implementation for performance.''
 
-In short, I've written the reference implementation to make it as painless as possible for an implementor -- or a regular programmer -- to adopt this library and get good results with it.
+''In short, I've written the reference implementation to make it as painless as possible for an implementor -- or a regular programmer -- to adopt this library and get good results with it.''
 
-Another implementation, derived from Chibi Scheme's SRFI 130, is present in the foof subdirectory. This implementation is smaller but may be slower. It can be more easily adapted to Schemes that differentiate between indexes and cursors.
+''Another implementation, derived from Chibi Scheme's SRFI 130, is present in the foof subdirectory. This implementation is smaller but may be slower. It can be more easily adapted to Schemes that differentiate between indexes and cursors.''
 ===== Acknowledgements
 Thanks to the members of the SRFI 130 mailing list who made this SRFI what it now is, including Per Bothner, Arthur Gleckler, Shiro Kawai, Jim Rees, and especially Alex Shinn, whose idea it was to make cursors and indexes disjoint, and who provided the foof implementation. The following acknowledgements by Olin Shivers are taken from SRFI 13:
 
