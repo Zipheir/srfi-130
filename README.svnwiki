@@ -74,14 +74,12 @@ All predicates passed to procedures defined in this SRFI may be called in any or
 ==== Shared storage
 Some Scheme implementations, e.g. Guile, provide ways to construct substrings that share storage with other strings. SRFI 130 provides only minimal support for such shared substrings. The following SRFI 130 procedures are allowed to return a result which shares storage with one or more of their string arguments:
 
-#+BEGIN_EXAMPLE
-substring/cursors
-string-take string-take-right
-string-drop string-drop-right
-string-pad string-pad-right
-string-trim string-trim-right string-trim-both
-string-split string-filter string-remove
-#+END_EXAMPLE
+ substring/cursors
+ string-take string-take-right
+ string-drop string-drop-right
+ string-pad string-pad-right
+ string-trim string-trim-right string-trim-both
+ string-split string-filter string-remove
 
 In particular, if the result is the same (in the sense of string=?) as any of the arguments, any implementation of the above procedures may return the string argument without copying it. Other procedures such as string-copy/cursors, as well as all the [[https://srfi.schemers.org/srfi-130/srfi-130.html#R7RS|R7RS]] procedures, are not permitted to return shared results. If a shared value is returned, it may be mutable or immutable.
 ==== Naming conventions
@@ -105,21 +103,16 @@ When omitted, they default to 0 and the length of the string, respectively; or f
 * Unless otherwise noted in the text describing the procedure, any prefix of these optional parameters may be supplied, from zero arguments to the full list.
 * When a procedure returns multiple values, this is shown by listing the return values in square brackets, as well.
 ====== So, for example, the procedure with signature
-#+BEGIN_EXAMPLE
-halts? f [x init-store] → [boolean integer]
-#+END_EXAMPLE
+{{halts? f [x init-store] → [boolean integer]}}
 
 would take one (f), two (f, x) or three (f, x, init-store) input parameters, and return two values, a boolean and an integer.
 ===== A parameter followed by "..." means zero or more elements.
 ====== So the procedure with the signature
-#+BEGIN_EXAMPLE
-sum-squares x ...  → number
-#+END_EXAMPLE
+{{sum-squares x ...  → number}}
+
 takes zero or more arguments (x ...),
 ====== while the procedure with signature
-#+BEGIN_EXAMPLE
-spell-check doc dict[1] dict[2] ... → string-list
-#+END_EXAMPLE
+{{spell-check doc dict[1] dict[2] ... → string-list}}
 
 takes two required parameters (doc and dict[1]) and zero or more optional parameters (dict[2] ...).
 ===== If a procedure's return value is said to be "unspecified," this means that the procedure returns a single arbitrary value.
@@ -461,10 +454,8 @@ This is an "extended substring" procedure that implements replicated copying of 
 
 S is a string; start and end are optional arguments that demarcate a substring of s, defaulting to 0 and the length of s (i.e., the whole string). Replicate this substring up and down index space, in both the positive and negative directions. For example, if s = "abcdefg", start=3, and end=6, then we have the conceptual bidirectionally-infinite string
 
-#+BEGIN_EXAMPLE
-...  d  e  f  d  e  f  d  e  f d  e  f  d  e  f  d  e  f  d ...
-... -9 -8 -7 -6 -5 -4 -3 -2 -1 0 +1 +2 +3 +4 +5 +6 +7 +8 +9 ...
-#+END_EXAMPLE
+ ...  d  e  f  d  e  f  d  e  f d  e  f  d  e  f  d  e  f  d ...
+ ... -9 -8 -7 -6 -5 -4 -3 -2 -1 0 +1 +2 +3 +4 +5 +6 +7 +8 +9 ...
 
 string-replicate returns the substring of this string beginning at index from, and ending at to. Note that these arguments cannot be cursors. It is an error if from is greater than to.
 ======= You can use string-replicate to perform a variety of tasks:
