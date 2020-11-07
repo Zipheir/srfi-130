@@ -68,7 +68,7 @@ While indexes are exact integers ranging from 0 to the length of the string they
 
 It is an error to make any use of a cursor referring to a string after the string, or any string that shares storage with it, has been mutated by a procedure like string-set!, string-copy!, or string-fill!.
 
-Given a string of length n, there are n + 1 valid cursors that refer to it: one for each character in the string, and one for the position just after the last character, known as the "post-end cursor". The cursor for the first (or zeroth) position in the string is known as the "start cursor". The post-end cursor is provided because when creating a string from cursors the second cursor argument is exclusive. It is an error if a cursor argument is not one of the valid cursors for the string argument. The index analogue of the post-end cursor is n.
+Given a string of length {{n}}, there are {{n + 1}} valid cursors that refer to it: one for each character in the string, and one for the position just after the last character, known as the "post-end cursor". The cursor for the first (or zeroth) position in the string is known as the "start cursor". The post-end cursor is provided because when creating a string from cursors the second cursor argument is exclusive. It is an error if a cursor argument is not one of the valid cursors for the string argument. The index analogue of the post-end cursor is n.
 ==== Calling predicates
 All predicates passed to procedures defined in this SRFI may be called in any order and any number of times, except as otherwise noted. This is not the case in SRFI 13.
 ==== Shared storage
@@ -81,7 +81,7 @@ Some Scheme implementations, e.g. Guile, provide ways to construct substrings th
  string-trim string-trim-right string-trim-both
  string-split string-filter string-remove
 
-In particular, if the result is the same (in the sense of string=?) as any of the arguments, any implementation of the above procedures may return the string argument without copying it. Other procedures such as string-copy/cursors, as well as all the [[https://srfi.schemers.org/srfi-130/srfi-130.html#R7RS|R7RS]] procedures, are not permitted to return shared results. If a shared value is returned, it may be mutable or immutable.
+In particular, if the result is the same (in the sense of {{string=?}}) as any of the arguments, any implementation of the above procedures may return the string argument without copying it. Other procedures such as string-copy/cursors, as well as all the [[https://srfi.schemers.org/srfi-130/srfi-130.html#R7RS|R7RS]] procedures, are not permitted to return shared results. If a shared value is returned, it may be mutable or immutable.
 ==== Naming conventions
 The procedures of this SRFI follow a consistent naming scheme, and are consistent with the conventions developed in SRFI 1. The names are composed of smaller lexemes in a regular way that exposes the structure and relationships between the procedures. This should help the programmer to recall or reconstitute the name of the desired procedure. In particular, the order of common parameters is consistent across the different procedures.
 
@@ -93,11 +93,11 @@ Procedures that have left/right directional variants use no suffix to specify le
 * Start and end parameters are half-open string cursors or indexes specifying a substring within a string parameter, and typically restrict a procedure's action to the indicated substring.
 
 When omitted, they default to 0 and the length of the string, respectively; or from another point of view, they default to the start cursor and the post-end cursor, respectively. For indexes, it must be the case that 0 <= start <= end <= (string-length s), for the corresponding parameter s when start and end are indexes, and the corresponding relationship must hold when they are cursors. It is an error unless start and end are both cursors or both indexes.
-* A pred parameter is a unary character predicate procedure, returning a true/false value when applied to a character.
-* It is an error if a pred is not pure and functional.
+* A {{pred}} parameter is a unary character predicate procedure, returning a true/false value when applied to a character.
+* It is an error if a {{pred}} is not pure and functional.
 * A cursor parameter is either a cursor or an exact non-negative integer specifying an index into a string.
-* Len and nchars parameters are exact non-negative integers specifying a length of a string or some number of characters.
-* An obj parameter may be any value at all.
+* {{Len}} and {{nchars}} parameters are exact non-negative integers specifying a length of a string or some number of characters.
+* An {{obj}} parameter may be any value at all.
 * Passing values to procedures with these parameters that do not satisfy these types is an error.
 * Parameters given in square brackets are optional.
 * Unless otherwise noted in the text describing the procedure, any prefix of these optional parameters may be supplied, from zero arguments to the full list.
@@ -105,16 +105,16 @@ When omitted, they default to 0 and the length of the string, respectively; or f
 ====== So, for example, the procedure with signature
 {{halts? f [x init-store] → [boolean integer]}}
 
-would take one (f), two (f, x) or three (f, x, init-store) input parameters, and return two values, a boolean and an integer.
+would take one {{(f)}}, two {{(f, x)}} or three {{(f, x, init-store)}} input parameters, and return two values, a boolean and an integer.
 ===== A parameter followed by "..." means zero or more elements.
 ====== So the procedure with the signature
 {{sum-squares x ...  → number}}
 
-takes zero or more arguments (x ...),
+takes zero or more arguments {{(x ...)}},
 ====== while the procedure with signature
 {{spell-check doc dict[1] dict[2] ... → string-list}}
 
-takes two required parameters (doc and dict[1]) and zero or more optional parameters (dict[2] ...).
+takes two required parameters ({{doc}} and {{dict[1]}}) and zero or more optional parameters ({{dict[2]}} ...).
 ===== If a procedure's return value is said to be "unspecified," this means that the procedure returns a single arbitrary value.
 Such a procedure is not even required to be consistent from call to call.
 ==== Procedures
@@ -147,17 +147,17 @@ Converts a cursor/index into s into the corresponding index/cursor. If the argum
 Is s the empty string?
 ====== string-every pred s [start end] → value
 ====== string-any pred s [start end] → value
-Checks to see if every/any character in s satisfies pred proceeding from left (index start) to right (index end).
+Checks to see if every/any character in s satisfies {{pred}} proceeding from left (index {{start}}) to right (index {{end}}).
 ======= The predicate is "witness-generating":
-* If string-any returns true, the returned true value is the one produced by the application of the predicate.
-* If string-every returns true, the returned true value is the one produced by the final application of the predicate to s[end-1].
-If string-every is applied to an empty sequence of characters, it simply returns {{#t}}.
+* If {{string-any}} returns true, the returned true value is the one produced by the application of the predicate.
+* If {{string-every}} returns true, the returned true value is the one produced by the final application of the predicate to {{s[end-1]}}.
+If {{string-every}} is applied to an empty sequence of characters, it simply returns {{#t}}.
 ======= The names of these procedures do not end with a question mark -- this is to indicate that they do not return a simple boolean ({{#t}} or {{#f}}), but a general value.
 ===== Constructors
 ====== string-tabulate proc len → string
-* Proc is an integer → char procedure.
-* Construct a string of size len by applying proc to each value from 0 (inclusive) to len (exclusive) to produce the corresponding string element.
-* The order in which proc is applied to the indexes is not specified.
+* {{Proc}} is an integer → char procedure.
+* Construct a string of size {{len}} by applying {{proc}} to each value from 0 (inclusive) to len (exclusive) to produce the corresponding string element.
+* The order in which {{proc}} is applied to the indexes is not specified.
 * Note that the order of arguments is not the same as SRFI 1's list-tabulate, but is the same as tabulation functions in other SRFIs.
 When this discrepancy was discovered in SRFI 13, it was too late to change SRFI 1.
 ====== string-unfold stop? mapper successor seed [base make-final] → string
@@ -280,7 +280,7 @@ If len <= end-start, the returned value is allowed to share storage with s, or b
 ====== string-trim       s [pred start end] → string
 ====== string-trim-right s [pred start end] → string
 ====== string-trim-both  s [pred start end] → string
-Trim s by skipping over all characters on the left / on the right / on both sides that satisfy the second parameter pred: pred defaults to char-whitespace?.
+Trim s by skipping over all characters on the left / on the right / on both sides that satisfy the second parameter {{pred}}: {{pred}} defaults to char-whitespace?.
 
 If no trimming occurs, these functions may return either s or a copy of s; in some implementations, proper substrings may share memory with s.
 
@@ -304,11 +304,11 @@ Is {{s1}} a prefix/suffix of {{s2}}?
 ====== string-index-right s pred [start end] → cursor
 ====== string-skip s pred [start end] → cursor
 ====== string-skip-right s pred [start end] → cursor
-string-index searches through s from the left, returning the cursor of the first occurrence of a character which satisfies the predicate pred. If no match is found, it returns end. string-index-right searches through s from the right, returning the cursor of the successor of the first occurrence of a character which satisfies the predicate pred. If no match is found, it returns start.
+string-index searches through s from the left, returning the cursor of the first occurrence of a character which satisfies the predicate {{pred}}. If no match is found, it returns end. string-index-right searches through s from the right, returning the cursor of the successor of the first occurrence of a character which satisfies the predicate {{pred}}. If no match is found, it returns start.
 
 The start and end parameters specify the beginning and end cursors or indexes of the search; the search includes the start, but not the end. Be careful of "fencepost" considerations: when searching right-to-left, the first position considered is (string-cursor-prev end), whereas when searching left-to-right, the first index considered is start. That is, the start/end indexes describe the same half-open interval [start,end) in these procedures that they do in all the other SRFI 130 procedures.
 
-The skip functions are similar, but use the complement of the criteria: they search for the first char that doesn't satisfy pred. E.g., to skip over initial whitespace, say
+The skip functions are similar, but use the complement of the criteria: they search for the first char that doesn't satisfy {{pred}}. E.g., to skip over initial whitespace, say
 
 <enscript highlight="scheme">
 (substring/cursors s (string-skip s char-whitespace?))
@@ -437,7 +437,7 @@ obeying the (tail) recursion
 </enscript>
 ======= The right-fold combinator is sometimes called a "catamorphism."
 ====== string-for-each-cursor proc s [start end] → unspecified
-Apply proc to each cursor of s, in order, excluding the post-end cursor. The optional start/end pairs restrict the endpoints of the loop. This is simply a method of looping over a string that is guaranteed to be safe and correct. Example:
+Apply {{proc}} to each cursor of s, in order, excluding the post-end cursor. The optional start/end pairs restrict the endpoints of the loop. This is simply a method of looping over a string that is guaranteed to be safe and correct. Example:
 
 <enscript highlight="scheme">
 (let ((s "abcde") (v '()))
@@ -501,7 +501,7 @@ If limit is a non-negative exact integer, at most that many splits occur, and th
 Use SRFI 115's regexp-split to split on a regular expression rather than a simple string.
 ====== string-filter pred s [start end] → string
 ====== string-remove pred s [start end] → string
-Filter the string s, retaining only those characters that satisfy / do not satisfy pred.
+Filter the string s, retaining only those characters that satisfy / do not satisfy {{pred}}.
 
 If the string is unaltered by the filtering operation, these functions may return either s or a copy of s.
 ======= Compatibility note:
