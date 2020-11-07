@@ -476,7 +476,7 @@ Returns
                (substring/cursors s1 end1 (string-cursor-end s1)))
 </enscript>
 
-That is, the segment of characters in {{s1}} from {{start1}} to end1 is replaced by the segment of characters in {{s2}} from start2 to end2. If start1=end1, this simply splices the {{s2}} characters into {{s1}} at the specified index.
+That is, the segment of characters in {{s1}} from {{start1}} to end1 is replaced by the segment of characters in {{s2}} from {{start2}} to end2. If start1=end1, this simply splices the {{s2}} characters into {{s1}} at the specified index.
 ======= Examples:
 <enscript highlight="scheme">
 (string-replace "The TCL programmer endured daily ridicule."
