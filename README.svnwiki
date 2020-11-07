@@ -554,7 +554,7 @@ Apply {{proc}} to each cursor of s, in order, excluding the post-end cursor. The
 
 This is an "extended substring" procedure that implements replicated copying of a substring of some string.
 
-{{S}} is a string; {{start}} and {{end}} are optional arguments that demarcate a substring of s, defaulting to {{0}} and the length of {{s}} (i.e., the whole string). Replicate this substring up and down index space, in both the positive and negative directions. For example, if {{s = "abcdefg"}}, {{start=3}}, and {{end=6}}, then we have the conceptual bidirectionally-infinite string
+{{S}} is a string; {{start}} and {{end}} are optional arguments that demarcate a substring of {{s}}, defaulting to {{0}} and the length of {{s}} (i.e., the whole string). Replicate this substring up and down index space, in both the positive and negative directions. For example, if {{s = "abcdefg"}}, {{start=3}}, and {{end=6}}, then we have the conceptual bidirectionally-infinite string
 
  ...  d  e  f  d  e  f  d  e  f d  e  f  d  e  f  d  e  f  d ...
  ... -9 -8 -7 -6 -5 -4 -3 -2 -1 0 +1 +2 +3 +4 +5 +6 +7 +8 +9 ...
