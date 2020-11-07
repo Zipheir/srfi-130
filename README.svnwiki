@@ -120,33 +120,69 @@ Such a procedure is not even required to be consistent from call to call.
 ==== Procedures
 ===== Cursor operations
 These procedures are mostly taken from Chibi Scheme.
+
 <procedure>string-cursor? obj → boolean</procedure>
+
 Returns {{#t}} if {{obj}} can be a string cursor, and {{#f}} otherwise. In implementations where cursors and indexes are the same thing, {{#t}} is returned on any cursor or index; where they are disjoint, {{#t}} is returned on cursors, {{#f}} on indexes. If obj is neither a cursor nor an index, string-cursor? will always return {{#f}}.
+
 <procedure>string-cursor-start s → cursor</procedure>
+
+
 <procedure>string-cursor-end s → cursor</procedure>
+
 Returns the start/post-end cursor of s respectively.
+
 <procedure>string-cursor-next s cursor → cursor</procedure>
+
+
 <procedure>string-cursor-prev s cursor → cursor</procedure>
+
 Returns the cursor into s following/preceding cursor. If cursor is an index, returns one more/less than cursor. It is an error if cursor is the post-end/start cursor of s.
+
 <procedure>string-cursor-forward s cursor nchars → cursor</procedure>
+
+
 <procedure>string-cursor-back s cursor nchars → cursor</procedure>
+
 Returns the cursor into s which follows/precedes cursor by {{nchars}} characters. If cursor is an index, returns {{nchars}} more/less than cursor. It is an error if the result would be an invalid cursor or index.
+
 <procedure>string-cursor=? cursor[1] cursor[2] → boolean</procedure>
+
+
 <procedure>string-cursor<? cursor[1] cursor[2] → boolean</procedure>
+
+
 <procedure>string-cursor>? cursor[1] cursor[2] → boolean</procedure>
+
+
 <procedure>string-cursor<=? cursor[1] cursor[2] → boolean</procedure>
+
+
 <procedure>string-cursor>=? cursor[1] cursor[2] → boolean</procedure>
+
 Compares two cursors or two indexes pointing into the same string.
+
 <procedure>string-cursor-diff s start end → nchars</procedure>
+
 Returns the number of characters between {{start}} and {{end}} in string s. Note that the result is always non-negative if {{start}} and {{end}} are a valid {{start-end}} pair.
+
 <procedure>string-cursor->index s cursor → index</procedure>
+
+
 <procedure>string-index->cursor s index → cursor</procedure>
+
 Converts a cursor/index into s into the corresponding index/cursor. If the argument is already an index/cursor, it is returned unchanged.
 ===== Predicates
+
 <procedure>string-null? s → boolean</procedure>
+
 Is s the empty string?
+
 <procedure>string-every pred s [start end] → value</procedure>
+
+
 <procedure>string-any pred s [start end] → value</procedure>
+
 Checks to see if every/any character in s satisfies {{pred}} proceeding from left (index {{start}}) to right (index {{end}}).
 ======= The predicate is "witness-generating":
 * If {{string-any}} returns true, the returned true value is the one produced by the application of the predicate.
@@ -154,13 +190,17 @@ Checks to see if every/any character in s satisfies {{pred}} proceeding from lef
 If {{string-every}} is applied to an empty sequence of characters, it simply returns {{#t}}.
 ======= The names of these procedures do not end with a question mark -- this is to indicate that they do not return a simple boolean ({{#t}} or {{#f}}), but a general value.
 ===== Constructors
+
 <procedure>string-tabulate proc len → string</procedure>
+
 * {{Proc}} is an integer → char procedure.
 * Construct a string of size {{len}} by applying {{proc}} to each value from {{0}} (inclusive) to {{len}} (exclusive) to produce the corresponding string element.
 * The order in which {{proc}} is applied to the indexes is not specified.
 * Note that the order of arguments is not the same as SRFI 1's list-tabulate, but is the same as tabulation functions in other SRFIs.
 When this discrepancy was discovered in SRFI 13, it was too late to change SRFI 1.
+
 <procedure>string-unfold stop? mapper successor seed [base make-final] → string</procedure>
+
 * This is a fundamental constructor for strings.
 
 <parameter>Successor</parameter>
@@ -213,13 +253,19 @@ The final string constructed does not share storage with either base or the valu
 
 This combinator sometimes is called an "anamorphism."
 ======= Note: implementations should take care that runtime stack limits do not cause overflow when constructing large (e.g., megabyte) strings with string-unfold.
+
 <procedure>string-unfold-right stop? mapper successor seed [base make-final] → string</procedure>
+
 This is a fundamental constructor for strings.
 
 It is equivalent to string-unfold, except that the results of mapper are assembled into the string in a right-to-left order, base is the optional rightmost portion of the constructed string, and make-final produces the leftmost portion of the constructed string.
 ===== Conversion
+
 <procedure>string->list/cursors s [start end] → char-list</procedure>
+
+
 <procedure>string->vector/cursors s [start end] → char-vector</procedure>
+
 {{string->list/cursors}} and {{string->vector/cursors}} return a newly allocated list or vector of the characters that make up the given string. They differ from the R7RS procedures {{string->list}} and {{string->vector}} by accepting either cursors or indexes.
 ====== reverse-list->string char-list → string
 An efficient implementation of (compose {{list->string}} reverse):
@@ -229,7 +275,9 @@ An efficient implementation of (compose {{list->string}} reverse):
 </enscript>
 
 This is a common idiom in the epilog of string-processing loops that accumulate an answer in a reverse-order list. (See also {{string-concatenate-reverse}} for the "chunked" variant.)
+
 <procedure>string-join string-list [delimiter grammar] → string</procedure>
+
 This procedure is a simple unparser --- it pastes strings together using the delimiter string.
 
 The {{grammar}} argument is a symbol that determines how the delimiter is used, and defaults to {{'infix}}.
@@ -278,8 +326,12 @@ If these procedures produce the entire string, they may return either {{s}} or a
 <enscript highlight="scheme">
 (string-take "foo" 37) => error
 </enscript>
+
 <procedure>string-pad s len [char start end] → string</procedure>
+
+
 <procedure>string-pad-right s len [char start end] → string</procedure>
+
 Build a string of length {{len}} comprised of s padded on the left (right) by as many occurrences of the character char as needed. If {{s}} has more than {{len}} chars, it is truncated on the left (right) to length {{len}}. Char defaults to {{#\space}}.
 
 If {{len <= end-start}}, the returned value is allowed to share storage with {{s}}, or be exactly {{s}} (if {{len = end-start}}).
@@ -289,9 +341,15 @@ If {{len <= end-start}}, the returned value is allowed to share storage with {{s
 (string-pad   "71325" 5) => "71325"
 (string-pad "8871325" 5) => "71325"
 </enscript>
+
 <procedure>string-trim       s [pred start end] → string</procedure>
+
+
 <procedure>string-trim-right s [pred start end] → string</procedure>
+
+
 <procedure>string-trim-both  s [pred start end] → string</procedure>
+
 Trim {{s}} by skipping over all characters on the left / on the right / on both sides that satisfy the second parameter {{pred}}: {{pred}} defaults to {{char-whitespace?}}.
 
 If no trimming occurs, these functions may return either {{s}} or a copy of {{s}}; in some implementations, proper substrings may share memory with {{s}}.
@@ -301,21 +359,37 @@ If no trimming occurs, these functions may return either {{s}} or a copy of {{s}
     => "The outlook wasn't brilliant,"
 </enscript>
 ===== Prefixes & suffixes
+
 <procedure>string-prefix-length    s1 s2 [start1 end1 start2 end2] → integer</procedure>
+
+
 <procedure>string-suffix-length    s1 s2 [start1 end1 start2 end2] → integer</procedure>
+
 Return the length of the longest common prefix/suffix of the two strings. For prefixes, this is equivalent to the "mismatch index" for the strings (modulo the {{start}} cursors).
 
 The optional {{start/end}} cursors or indexes restrict the comparison to the indicated substrings of {{s1}} and {{s2}}.
 
+
 <procedure>string-prefix?    s1 s2 [start1 end1 start2 end2] → boolean</procedure>
+
+
 <procedure>string-suffix?    s1 s2 [start1 end1 start2 end2] → boolean</procedure>
+
 Is {{s1}} a prefix/suffix of {{s2}}?
 * The optional {{start/end}} cursors or indexes restrict the comparison to the indicated substrings of {{s1}} and {{s2}}.
 ===== Searching
+
 <procedure>string-index s pred [start end] → cursor</procedure>
+
+
 <procedure>string-index-right s pred [start end] → cursor</procedure>
+
+
 <procedure>string-skip s pred [start end] → cursor</procedure>
+
+
 <procedure>string-skip-right s pred [start end] → cursor</procedure>
+
 {{string-index}} searches through {{s}} from the left, returning the cursor of the first occurrence of a character which satisfies the predicate {{pred}}. If no match is found, it returns {{end}}. string-index-right searches through {{s}} from the right, returning the cursor of the successor of the first occurrence of a character which satisfies the predicate {{pred}}. If no match is found, it returns start.
 
 The {{start}} and {{end}} parameters specify the beginning and end cursors or indexes of the search; the search includes the {{start}}, but not the {{end}}. Be careful of "fencepost" considerations: when searching right-to-left, the first position considered is {{(string-cursor-prev end)}}, whereas when searching left-to-right, the first index considered is start. That is, the {{start/end}} indexes describe the same half-open interval {{[start,end)}} in these procedures that they do in all the other SRFI 130 procedures.
@@ -329,8 +403,12 @@ The skip functions are similar, but use the complement of the criteria: they sea
 Note that the result is always a cursor, even when {{start}} and {{end}} are indexes. Use {{string-cursor->index}} to convert the result to an index. Therefore, these four functions are not entirely compatible with their SRFI 13 counterparts, which return {{#f}} on failure.
 
 These functions can be trivially composed with string-take and string-drop to produce take-while, drop-while, span, and break procedures without loss of efficiency.
+
 <procedure>string-contains s1 s2 [start1 end1 start2 end2] → cursor</procedure>
+
+
 <procedure>string-contains-right s1 s2 [start1 end1 start2 end2] → cursor</procedure>
+
 Does string {{s1}} contain string {{s2}}?
 
 Returns the cursor in {{s1}} referring to the first character of the first/last instance of {{s2}} as a substring, or {{#f}} if there is no match. The optional {{start/end}} indexes restrict the operation to the indicated substrings.
@@ -347,7 +425,9 @@ Note that the result is always a cursor, even when {{start1}} and {{end1}} are i
 
 The name of this procedure does not end with a question mark -- this is to indicate that it does not return a simple boolean ({{#t}} or {{#f}}). Rather, it returns either false ({{#f}}) or a cursor.
 ===== The whole string
+
 <procedure>string-reverse  s [start end] -> string</procedure>
+
 Reverse the string.
 
 {{string-reverse}} returns the result string and does not alter its {{s}} parameter.
@@ -360,11 +440,15 @@ Reverse the string.
 </enscript>
 
 Unicode note: Reversing a string simply reverses the sequence of code-points it contains. So a combining diacritic a coming after a base character {{b}} in string {{s}} would come out before {{b}} in the reversed result.
+
 <procedure>string-concatenate string-list → string</procedure>
+
 Append the elements of string-list together into a single string. Guaranteed to return a freshly allocated string.
 
 Note that the (apply string-append string-list) idiom is not robust for long lists of strings, as some Scheme implementations limit the number of arguments that may be passed to an n-ary procedure.
+
 <procedure>string-concatenate-reverse string-list [final-string end] → string</procedure>
+
 With no optional arguments, this function is equivalent to
 
 <enscript highlight="scheme">
@@ -391,8 +475,12 @@ E.g.
 </enscript>
 
 This procedure is useful in the construction of procedures that accumulate character data into lists of string buffers, and wish to convert the accumulated data into a single string when done.
+
 <procedure>string-fold kons knil s [start end] → value</procedure>
+
+
 <procedure>string-fold-right kons knil s [start end] → value</procedure>
+
 These are the fundamental iterators for strings.
 
 The left-fold operator maps the {{kons}} procedure across the string from left to right
@@ -448,7 +536,9 @@ obeying the (tail) recursion
   ans)
 </enscript>
 ======= The right-fold combinator is sometimes called a "catamorphism."
+
 <procedure>string-for-each-cursor proc s [start end] → unspecified</procedure>
+
 Apply {{proc}} to each cursor of s, in order, excluding the post-end cursor. The optional {{start/end}} pairs restrict the endpoints of the loop. This is simply a method of looping over a string that is guaranteed to be safe and correct.
 
 ====== Example:
@@ -459,7 +549,9 @@ Apply {{proc}} to each cursor of s, in order, excluding the post-end cursor. The
     s)
   v) => (101 100 99 98 97)
 </enscript>
+
 <procedure>string-replicate s from to [start end] → string</procedure>
+
 This is an "extended substring" procedure that implements replicated copying of a substring of some string.
 
 {{S}} is a string; {{start}} and {{end}} are optional arguments that demarcate a substring of s, defaulting to {{0}} and the length of {{s}} (i.e., the whole string). Replicate this substring up and down index space, in both the positive and negative directions. For example, if {{s = "abcdefg"}}, {{start=3}}, and {{end=6}}, then we have the conceptual bidirectionally-infinite string
@@ -478,9 +570,13 @@ string-replicate returns the substring of this string beginning at index {{from}
 * It is an error if {{start=end}} -- although this is allowed by special dispensation when from=to.
 ======= Compatibility note:
 {{string-replicate}} is identical to the {{xsubstring}} procedure of SRFI 13, except that the to argument is required.
+
 <procedure>string-count s pred [start end] → integer</procedure>
+
 Return a count of the number of characters in {{s}} that satisfy the {{pred}} argument.
+
 <procedure>string-replace s1 s2 start1 end1 [start2 end2] → string</procedure>
+
 Returns
 
 <enscript highlight="scheme">
@@ -504,7 +600,9 @@ That is, the segment of characters in {{s1}} from {{start1}} to {{end1}} is repl
 (string-insert "It's easy to code it up in Scheme." 5 "really ") =>
     "It's really easy to code it up in Scheme."
 </enscript>
+
 <procedure>string-split s delimiter [grammar limit start end] → list</procedure>
+
 Returns a list of the words contained in the substring of string from {{start}} (inclusive) to {{end}} (exclusive). Delimiter specifies a string that is to be used as the word separator. This will often be a single character, but multiple characters are allowed for cases like splitting on "\r\n". The returned list will then have one more item than the number of non-overlapping occurrences of the delimiter in the string. If delimiter is an empty string, then the returned list contains a list of strings, each of which contains a single character.
 
 Grammar is a symbol with the same meaning as in the {{string-join}} procedure. If it is infix, which is the default, processing is done as described above, except that an empty {{s}} produces the empty list; if it is strict-infix, an empty {{s}} signals an error. The values {{prefix}} and {{suffix}} cause a leading/trailing empty string in the result to be suppressed.
@@ -512,8 +610,12 @@ Grammar is a symbol with the same meaning as in the {{string-join}} procedure. I
 If {{limit}} is a non-negative exact integer, at most that many splits occur, and the remainder of string is returned as the final element of the list (thus, the result will have at most {{limit+1}} elements). If {{limit}} is not specified or is {{#f}}, then as many splits as possible are made. It is an error if {{limit}} is any other value.
 
 Use SRFI 115's regexp-split to split on a regular expression rather than a simple string.
+
 <procedure>string-filter pred s [start end] → string</procedure>
+
+
 <procedure>string-remove pred s [start end] → string</procedure>
+
 Filter the string {{s}}, retaining only those characters that satisfy / do not satisfy {{pred}}.
 
 If the string is unaltered by the filtering operation, these functions may return either {{s}} or a copy of {{s}}.
