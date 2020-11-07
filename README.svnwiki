@@ -325,7 +325,7 @@ Returns the cursor in {{s1}} referring to the first character of the first/last 
 
 The returned cursor is in the range [start1,end1). A successful match must lie entirely in the [start1,end1) range of {{s1}}.
 
-Note that the result is always a cursor, even when {{start1}} and end1 are indexes. Use string-cursor->index to convert a cursor result to an index.
+Note that the result is always a cursor, even when {{start1}} and {{end1}} are indexes. Use string-cursor->index to convert a cursor result to an index.
 
 <enscript highlight="scheme">
 (string-contains "eek -- what a geek." "ee"
@@ -476,7 +476,7 @@ Returns
                (substring/cursors s1 end1 (string-cursor-end s1)))
 </enscript>
 
-That is, the segment of characters in {{s1}} from {{start1}} to end1 is replaced by the segment of characters in {{s2}} from {{start2}} to end2. If start1=end1, this simply splices the {{s2}} characters into {{s1}} at the specified index.
+That is, the segment of characters in {{s1}} from {{start1}} to {{end1}} is replaced by the segment of characters in {{s2}} from {{start2}} to end2. If start1=end1, this simply splices the {{s2}} characters into {{s1}} at the specified index.
 ======= Examples:
 <enscript highlight="scheme">
 (string-replace "The TCL programmer endured daily ridicule."
