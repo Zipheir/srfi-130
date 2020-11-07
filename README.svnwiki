@@ -220,7 +220,7 @@ is the optional initial/leftmost portion of the constructed string; it defaults 
 <parameter>Make-final</parameter>
 is applied to the terminal seed value (on which stop? returns true) to produce the final/rightmost portion of the constructed string. It defaults to {{(lambda (x) ""))).
 
-* string-unfold is a fairly powerful string constructor -- you can use it to convert a list to a string, read a port into a string, reverse a string, copy a string, and so forth.
+* {{string-unfold}} is a fairly powerful string constructor -- you can use it to convert a list to a string, read a port into a string, reverse a string, copy a string, and so forth.
 ====== Examples:
 <enscript highlight="scheme">
 (port->string p) = (string-unfold eof-object? values
