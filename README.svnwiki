@@ -88,8 +88,8 @@ The procedures of this SRFI follow a consistent naming scheme, and are consisten
 Procedures that have left/right directional variants use no suffix to specify left-to-right operation, -right to specify right-to-left operation, and -both to specify both. This is a general convention that has been established in other SRFIs; the value of a convention is proportional to the extent of its use.
 ==== Notation
 ===== In the following procedure specifications:
-* An s parameter is a string.
-* A char parameter is a character.
+* An {{s}} parameter is a string.
+* A {{char}} parameter is a character.
 * {{Start}} and {{end}} parameters are half-open string cursors or indexes specifying a substring within a string parameter, and typically restrict a procedure's action to the indicated substring.
 
 When omitted, they default to 0 and the length of the string, respectively; or from another point of view, they default to the start cursor and the post-end cursor, respectively. For indexes, it must be the case that 0 <= {{start}} <= {{end}} <= (string-length s), for the corresponding parameter s when {{start}} and {{end}} are indexes, and the corresponding relationship must hold when they are cursors. It is an error unless {{start}} and {{end}} are both cursors or both indexes.
