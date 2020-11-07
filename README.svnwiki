@@ -130,7 +130,7 @@ Returns the start/post-end cursor of s respectively.
 Returns the cursor into s following/preceding cursor. If cursor is an index, returns one more/less than cursor. It is an error if cursor is the post-end/start cursor of s.
 ====== string-cursor-forward s cursor nchars → cursor
 ====== string-cursor-back s cursor nchars → cursor
-Returns the cursor into s which follows/precedes cursor by nchars characters. If cursor is an index, returns nchars more/less than cursor. It is an error if the result would be an invalid cursor or index.
+Returns the cursor into s which follows/precedes cursor by {{nchars}} characters. If cursor is an index, returns {{nchars}} more/less than cursor. It is an error if the result would be an invalid cursor or index.
 ====== string-cursor=? cursor[1] cursor[2] → boolean
 ====== string-cursor<? cursor[1] cursor[2] → boolean
 ====== string-cursor>? cursor[1] cursor[2] → boolean
@@ -178,7 +178,7 @@ maps each seed value to the corresponding character in the result string. These 
 is the optional initial/leftmost portion of the constructed string; it defaults to the empty string "".
 
 <parameter>Make-final</parameter>
-is applied to the terminal seed value (on which stop? returns true) to produce the final/rightmost portion of the constructed string. It defaults to (lambda (x) "").
+is applied to the terminal seed value (on which stop? returns true) to produce the final/rightmost portion of the constructed string. It defaults to {{(lambda (x) ""))).
 
 * string-unfold is a fairly powerful string constructor -- you can use it to convert a list to a string, read a port into a string, reverse a string, copy a string, and so forth.
 ====== Examples:
@@ -233,12 +233,12 @@ This is a common idiom in the epilog of string-processing loops that accumulate 
 This procedure is a simple unparser --- it pastes strings together using the delimiter string.
 
 The grammar argument is a symbol that determines how the delimiter is used, and defaults to 'infix.
-* 'infix means an infix or separator grammar: insert the delimiter between list elements.
+* {{'infix}} means an infix or separator grammar: insert the delimiter between list elements.
 An empty list will produce an empty string -- note, however, that parsing an empty string with an infix or separator grammar is ambiguous.
 Is it an empty list, or a list of one element, the empty string?
-* 'strict-infix means the same as 'infix, but will signal an error if given an empty list.
-* 'suffix means a suffix or terminator grammar: insert the delimiter after every list element. This grammar has no ambiguities.
-* 'prefix means a prefix grammar: insert the delimiter before every list element. This grammar has no ambiguities.
+* {{'strict-infix}} means the same as 'infix, but will signal an error if given an empty list.
+* {{'suffix}} means a suffix or terminator grammar: insert the delimiter after every list element. This grammar has no ambiguities.
+* {{'prefix}} means a prefix grammar: insert the delimiter before every list element. This grammar has no ambiguities.
 * The delimiter is the string used to delimit elements; it defaults to a single space " ".
 * Examples
 <enscript highlight="scheme">
@@ -255,15 +255,15 @@ Is it an empty list, or a list of one element, the empty string?
 </enscript>
 ===== Selection
 ====== string-ref/cursor s cursor → char
-Returns character s[i] using a valid cursor or index of s. It differs from the R7RS procedure string-ref by accepting either a cursor or an index.
+Returns character {{s[i]}} using a valid cursor or index of s. It differs from the R7RS procedure string-ref by accepting either a cursor or an index.
 ====== substring/cursors s start end → string
 ====== string-copy/cursors s [start end] → string
-These procedures return a string whose contents are the characters of s beginning with index start (inclusive) and ending with index end (exclusive). If substring/ cursors produces the entire string, it may return either s or a copy of s; in some implementations, proper substrings may share memory with s. However, string-copy /cursors always returns a newly allocated string. They differ from the R7RS procedures substring and string-copy by accepting either cursors or indexes.
+These procedures return a string whose contents are the characters of s beginning with index start (inclusive) and ending with index end (exclusive). If {{substring/cursors}} produces the entire string, it may return either {{s}} or a copy of {{s}}; in some implementations, proper substrings may share memory with {{s}}. However, string-copy /cursors always returns a newly allocated string. They differ from the R7RS procedures substring and string-copy by accepting either cursors or indexes.
 ====== string-take s nchars → string
 ====== string-drop s nchars → string
 ====== string-take-right s nchars → string
 ====== string-drop-right s nchars → string
-string-take returns the first nchars of s; string-drop returns all but the first nchars of s. string-take-right returns the last nchars of s; string-drop-right returns all but the last nchars of s.
+string-take returns the first {{nchars}} of {{s}}; string-drop returns all but the first {{nchars}} of {{s}}. string-take-right returns the last {{nchars}} of s; string-drop-right returns all but the last {{nchars}} of {{s}}.
 
 If these procedures produce the entire string, they may return either s or a copy of s; in some implementations, proper substrings may share memory with s.
 ======= Examples
