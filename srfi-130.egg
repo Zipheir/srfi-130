@@ -4,6 +4,6 @@
  (maintainer "Sergey Goldgaber")
  (synopsis "SRFI-130: Cursor-based string library")
  (category data)
- (test-dependencies test)
+ (test-dependencies test r7rs)
  (license "MIT")
  (components (extension srfi-130)))

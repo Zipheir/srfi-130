@@ -6,13 +6,13 @@
           string-cursor-prev string-cursor-next
           string-cursor-forward string-cursor-back
           string-cursor=? string-cursor<? string-cursor>?
-          string-cursor<=? string-cursor>?
+          string-cursor<=? string-cursor>=? string-cursor>?
           string-cursor-diff string-cursor->index string-index->cursor)
   (export string-null? string-every string-any)
   (export string-tabulate string-unfold string-unfold-right)
   (export string->list/cursors string->vector/cursors
           reverse-list->string string-join)
-  (export string-ref substring/cursors string-copy/cursors
+  (export string-ref string-ref/cursor substring/cursors string-copy/cursors
           string-take string-drop string-take-right string-drop-right
           string-pad string-pad-right
           string-trim string-trim-right string-trim-both)

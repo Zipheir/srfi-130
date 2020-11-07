@@ -44,9 +44,8 @@
 ;;; and cursors.  Beginning with string-take, the optional arguments
 ;;; tested are indexes rather than cursors.
 
-(import (scheme base)
-        (scheme write)
-        (only (scheme char) char-whitespace?)
+(import (scheme)
+        (r7rs)
         (srfi 130))
 
 (define (writeln . xs)
