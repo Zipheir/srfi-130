@@ -561,9 +561,18 @@ This is an "extended substring" procedure that implements replicated copying of 
 
 string-replicate returns the substring of this string beginning at index {{from}}, and ending at {{to}}. Note that these arguments cannot be cursors. It is an error if {{from}} is greater than {{to}}.
 ======= You can use string-replicate to perform a variety of tasks:
-* To rotate a string left: (string-replicate "abcdef" 2 8) => "cdefab"
-* To rotate a string right: (string-replicate "abcdef" -2 4) => "efabcd"
-* To replicate a string: (string-replicate "abc" 0 7) => "abcabca"
+* To rotate a string left:
+<enscript highlight="scheme">
+(string-replicate "abcdef" 2 8) => "cdefab
+</enscript>"
+* To rotate a string right:
+<enscript highlight="scheme">
+(string-replicate "abcdef" -2 4) => "efabcd
+</enscript>"
+* To replicate a string:
+<enscript highlight="scheme">
+(string-replicate "abc" 0 7) => "abcabca
+</enscript>"
 ======= Note that
 * The from/to indexes give a half-open range -- the characters from index from up to, but not including, index to.
 * The from/to indexes are not in terms of the index space for string {{s}}. They are in terms of the replicated index space of the substring defined by {{s}}, {{start}}, and {{end}}.
