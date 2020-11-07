@@ -8,46 +8,46 @@ For more information see: [[https://srfi.schemers.org/srfi-130/|SRFI-130: Cursor
 === Procedure Index
 Here is a list of the procedures provided by this SRFI.
 ==== Cursor operations
-===== string-cursor?
-===== string-cursor-start    string-cursor-end
-===== string-cursor-next     string-cursor-prev
-===== string-cursor-forward  string-cursor-back
-===== string-cursor=?
-===== string-cursor<?        string-cursor>?
-===== string-cursor<=?       string-cursor>=?
-===== string-cursor-diff
-===== string-cursor->index   string-index->cursor
+* string-cursor?
+* string-cursor-start    string-cursor-end
+* string-cursor-next     string-cursor-prev
+* string-cursor-forward  string-cursor-back
+* string-cursor=?
+* string-cursor<?        string-cursor>?
+* string-cursor<=?       string-cursor>=?
+* string-cursor-diff
+* string-cursor->index   string-index->cursor
 ==== Predicates
-===== string-null?
-===== string-every string-any
+* string-null?
+* string-every string-any
 ==== Constructors
-===== string-tabulate
-===== string-unfold   string-unfold-right
+* string-tabulate
+* string-unfold   string-unfold-right
 ==== Conversion
-===== string->list/cursors string->vector/cursors
-===== reverse-list->string string-join
+* string->list/cursors string->vector/cursors
+* reverse-list->string string-join
 ==== Selection
-===== string-ref/cursor
-===== substring/cursors  string-copy/cursors
-===== string-take        string-take-right
-===== string-drop        string-drop-right
-===== string-pad         string-pad-right
-===== string-trim        string-trim-right string-trim-both
+* string-ref/cursor
+* substring/cursors  string-copy/cursors
+* string-take        string-take-right
+* string-drop        string-drop-right
+* string-pad         string-pad-right
+* string-trim        string-trim-right string-trim-both
 ==== Prefixes & suffixes
-===== string-prefix-length    string-suffix-length
-===== string-prefix?          string-suffix?
+* string-prefix-length    string-suffix-length
+* string-prefix?          string-suffix?
 ==== Searching
-===== string-index     string-index-right
-===== string-skip      string-skip-right
-===== string-contains  string-contains-right
+* string-index     string-index-right
+* string-skip      string-skip-right
+* string-contains  string-contains-right
 ==== The whole string
-===== string-reverse
-===== string-concatenate  string-concatenate-reverse
-===== string-fold         string-fold-right
-===== string-for-each-cursor
-===== string-replicate    string-count
-===== string-replace      string-split
-===== string-filter       string-remove
+* string-reverse
+* string-concatenate  string-concatenate-reverse
+* string-fold         string-fold-right
+* string-for-each-cursor
+* string-replicate    string-count
+* string-replace      string-split
+* string-filter       string-remove
 === Rationale
 This SRFI defines a rich set of operations for manipulating strings. These are frequently useful for scripting and other text-manipulation applications. The library's design was influenced by the string libraries found in MIT Scheme, Gambit, RScheme, MzScheme, SLIB, Common Lisp, Bigloo, Guile, Chez, APL, Java, and the SML standard basis. All functionality is available in substring and full-string forms.
 
@@ -90,18 +90,20 @@ The procedures of this SRFI follow a consistent naming scheme, and are consisten
 Procedures that have left/right directional variants use no suffix to specify left-to-right operation, -right to specify right-to-left operation, and -both to specify both. This is a general convention that has been established in other SRFIs; the value of a convention is proportional to the extent of its use.
 ==== Notation
 ===== In the following procedure specifications:
-====== An s parameter is a string.
-====== A char parameter is a character.
-====== Start and end parameters are half-open string cursors or indexes specifying a substring within a string parameter, and typically restrict a procedure's action to the indicated substring.
+* An s parameter is a string.
+* A char parameter is a character.
+* Start and end parameters are half-open string cursors or indexes specifying a substring within a string parameter, and typically restrict a procedure's action to the indicated substring.
+
 When omitted, they default to 0 and the length of the string, respectively; or from another point of view, they default to the start cursor and the post-end cursor, respectively. For indexes, it must be the case that 0 <= start <= end <= (string-length s), for the corresponding parameter s when start and end are indexes, and the corresponding relationship must hold when they are cursors. It is an error unless start and end are both cursors or both indexes.
-====== A pred parameter is a unary character predicate procedure, returning a true/false value when applied to a character.
-It is an error if a pred is not pure and functional.
-====== A cursor parameter is either a cursor or an exact non-negative integer specifying an index into a string.
-====== Len and nchars parameters are exact non-negative integers specifying a length of a string or some number of characters.
-====== An obj parameter may be any value at all.
-===== Passing values to procedures with these parameters that do not satisfy these types is an error.
-===== Parameters given in square brackets are optional.
-Unless otherwise noted in the text describing the procedure, any prefix of these optional parameters may be supplied, from zero arguments to the full list. When a procedure returns multiple values, this is shown by listing the return values in square brackets, as well.
+* A pred parameter is a unary character predicate procedure, returning a true/false value when applied to a character.
+* It is an error if a pred is not pure and functional.
+* A cursor parameter is either a cursor or an exact non-negative integer specifying an index into a string.
+* Len and nchars parameters are exact non-negative integers specifying a length of a string or some number of characters.
+* An obj parameter may be any value at all.
+* Passing values to procedures with these parameters that do not satisfy these types is an error.
+* Parameters given in square brackets are optional.
+* Unless otherwise noted in the text describing the procedure, any prefix of these optional parameters may be supplied, from zero arguments to the full list.
+* When a procedure returns multiple values, this is shown by listing the return values in square brackets, as well.
 ====== So, for example, the procedure with signature
 #+BEGIN_EXAMPLE
 halts? f [x init-store] → [boolean integer]
@@ -154,26 +156,26 @@ Is s the empty string?
 ====== string-any pred s [start end] → value
 Checks to see if every/any character in s satisfies pred proceeding from left (index start) to right (index end).
 ======= The predicate is "witness-generating":
-======== If string-any returns true, the returned true value is the one produced by the application of the predicate.
-======== If string-every returns true, the returned true value is the one produced by the final application of the predicate to s[end-1].
+* If string-any returns true, the returned true value is the one produced by the application of the predicate.
+* If string-every returns true, the returned true value is the one produced by the final application of the predicate to s[end-1].
 If string-every is applied to an empty sequence of characters, it simply returns #t.
 ======= The names of these procedures do not end with a question mark -- this is to indicate that they do not return a simple boolean (#t or #f), but a general value.
 ===== Constructors
 ====== string-tabulate proc len → string
-======= Proc is an integer → char procedure.
-======= Construct a string of size len by applying proc to each value from 0 (inclusive) to len (exclusive) to produce the corresponding string element.
-======= The order in which proc is applied to the indexes is not specified.
-======= Note that the order of arguments is not the same as SRFI 1's list-tabulate, but is the same as tabulation functions in other SRFIs.
+* Proc is an integer → char procedure.
+* Construct a string of size len by applying proc to each value from 0 (inclusive) to len (exclusive) to produce the corresponding string element.
+* The order in which proc is applied to the indexes is not specified.
+* Note that the order of arguments is not the same as SRFI 1's list-tabulate, but is the same as tabulation functions in other SRFIs.
 When this discrepancy was discovered in SRFI 13, it was too late to change SRFI 1.
 ====== string-unfold stop? mapper successor seed [base make-final] → string
-======= This is a fundamental constructor for strings.
-======= Successor is used to generate a series of "seed" values from the initial seed:
-======== seed, (successor seed), (successor^2 seed), (successor^3 seed), ...
-======= Stop? tells us when to stop -- when it returns true when applied to one of these seed values.
-======= Mapper maps each seed value to the corresponding character in the result string. These chars are assembled into the string in a left-to-right order.
-======= Base is the optional initial/leftmost portion of the constructed string; it defaults to the empty string "".
-======= Make-final is applied to the terminal seed value (on which stop? returns true) to produce the final/rightmost portion of the constructed string. It defaults to (lambda (x) "").
-======= string-unfold is a fairly powerful string constructor -- you can use it to convert a list to a string, read a port into a string, reverse a string, copy a string, and so forth.
+* This is a fundamental constructor for strings.
+* Successor is used to generate a series of "seed" values from the initial seed:
+seed, (successor seed), (successor^2 seed), (successor^3 seed), ...
+* Stop? tells us when to stop -- when it returns true when applied to one of these seed values.
+* Mapper maps each seed value to the corresponding character in the result string. These chars are assembled into the string in a left-to-right order.
+* Base is the optional initial/leftmost portion of the constructed string; it defaults to the empty string "".
+* Make-final is applied to the terminal seed value (on which stop? returns true) to produce the final/rightmost portion of the constructed string. It defaults to (lambda (x) "").
+* string-unfold is a fairly powerful string constructor -- you can use it to convert a list to a string, read a port into a string, reverse a string, copy a string, and so forth.
 ====== Examples:
 #+BEGIN_SRC scheme
 (port->string p) = (string-unfold eof-object? values
@@ -226,14 +228,14 @@ This is a common idiom in the epilog of string-processing loops that accumulate 
 This procedure is a simple unparser --- it pastes strings together using the delimiter string.
 
 The grammar argument is a symbol that determines how the delimiter is used, and defaults to 'infix.
-======= 'infix means an infix or separator grammar: insert the delimiter between list elements.
+* 'infix means an infix or separator grammar: insert the delimiter between list elements.
 An empty list will produce an empty string -- note, however, that parsing an empty string with an infix or separator grammar is ambiguous.
 Is it an empty list, or a list of one element, the empty string?
-======= 'strict-infix means the same as 'infix, but will signal an error if given an empty list.
-======= 'suffix means a suffix or terminator grammar: insert the delimiter after every list element. This grammar has no ambiguities.
-======= 'prefix means a prefix grammar: insert the delimiter before every list element. This grammar has no ambiguities.
-======= The delimiter is the string used to delimit elements; it defaults to a single space " ".
-======= Examples
+* 'strict-infix means the same as 'infix, but will signal an error if given an empty list.
+* 'suffix means a suffix or terminator grammar: insert the delimiter after every list element. This grammar has no ambiguities.
+* 'prefix means a prefix grammar: insert the delimiter before every list element. This grammar has no ambiguities.
+* The delimiter is the string used to delimit elements; it defaults to a single space " ".
+* Examples
 #+BEGIN_SRC scheme
 (string-join '("foo" "bar" "baz") ":")         => "foo:bar:baz"
 (string-join '("foo" "bar" "baz") ":" 'suffix) => "foo:bar:baz:"
@@ -466,13 +468,13 @@ S is a string; start and end are optional arguments that demarcate a substring o
 
 string-replicate returns the substring of this string beginning at index from, and ending at to. Note that these arguments cannot be cursors. It is an error if from is greater than to.
 ======= You can use string-replicate to perform a variety of tasks:
-======== To rotate a string left: (string-replicate "abcdef" 2 8) => "cdefab"
-======== To rotate a string right: (string-replicate "abcdef" -2 4) => "efabcd"
-======== To replicate a string: (string-replicate "abc" 0 7) => "abcabca"
+* To rotate a string left: (string-replicate "abcdef" 2 8) => "cdefab"
+* To rotate a string right: (string-replicate "abcdef" -2 4) => "efabcd"
+* To replicate a string: (string-replicate "abc" 0 7) => "abcabca"
 ======= Note that
-======== The from/to indexes give a half-open range -- the characters from index from up to, but not including, index to.
-======== The from/to indexes are not in terms of the index space for string s. They are in terms of the replicated index space of the substring defined by s, start, and end.
-======= It is an error if start=end -- although this is allowed by special dispensation when from=to.
+* The from/to indexes give a half-open range -- the characters from index from up to, but not including, index to.
+* The from/to indexes are not in terms of the index space for string s. They are in terms of the replicated index space of the substring defined by s, start, and end.
+* It is an error if start=end -- although this is allowed by special dispensation when from=to.
 ======= Compatibility note:
 string-replicate is identical to the xsubstring procedure of SRFI 13, except that the to argument is required.
 ====== string-count s pred [start end] → integer
