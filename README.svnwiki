@@ -92,7 +92,7 @@ Procedures that have left/right directional variants use no suffix to specify le
 * A {{char}} parameter is a character.
 * {{Start}} and {{end}} parameters are half-open string cursors or indexes specifying a substring within a string parameter, and typically restrict a procedure's action to the indicated substring.
 
-When omitted, they default to 0 and the length of the string, respectively; or from another point of view, they default to the start cursor and the post-end cursor, respectively. For indexes, it must be the case that 0 <= {{start}} <= {{end}} <= (string-length s), for the corresponding parameter s when {{start}} and {{end}} are indexes, and the corresponding relationship must hold when they are cursors. It is an error unless {{start}} and {{end}} are both cursors or both indexes.
+When omitted, they default to 0 and the length of the string, respectively; or from another point of view, they default to the start cursor and the post-end cursor, respectively. For indexes, it must be the case that 0 <= {{start}} <= {{end}} <= {{(string-length s)}}, for the corresponding parameter s when {{start}} and {{end}} are indexes, and the corresponding relationship must hold when they are cursors. It is an error unless {{start}} and {{end}} are both cursors or both indexes.
 * A {{pred}} parameter is a unary character predicate procedure, returning a true/false value when applied to a character.
 * It is an error if a {{pred}} is not pure and functional.
 * A cursor parameter is either a cursor or an exact non-negative integer specifying an index into a string.
@@ -218,7 +218,7 @@ maps each seed value to the corresponding character in the result string. These 
 is the optional initial/leftmost portion of the constructed string; it defaults to the empty string "".
 
 <parameter>Make-final</parameter>
-is applied to the terminal seed value (on which stop? returns true) to produce the final/rightmost portion of the constructed string. It defaults to {{(lambda (x) ""))).
+is applied to the terminal seed value (on which stop? returns true) to produce the final/rightmost portion of the constructed string. It defaults to {{(lambda (x) "")}}.
 
 * {{string-unfold}} is a fairly powerful string constructor -- you can use it to convert a list to a string, read a port into a string, reverse a string, copy a string, and so forth.
 ====== Examples:
