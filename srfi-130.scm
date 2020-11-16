@@ -2,6 +2,10 @@
   (import scheme)
   (import (only (chicken base) include error))
   (import (chicken module))
+  (import (chicken platform))
+
+  (register-feature! 'srfi-130)
+
   (export string-cursor? string-cursor-start string-cursor-end
           string-cursor-prev string-cursor-next
           string-cursor-forward string-cursor-back
