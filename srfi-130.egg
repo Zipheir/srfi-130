@@ -1,5 +1,3 @@
-;;; srfi-130.egg -*- Scheme -*- vim: ft=scheme:
-
 ((author "John Cowan")
  (maintainer "Wolfgang Corcoran-Mathe")
  (synopsis "SRFI-130: Cursor-based string library")
