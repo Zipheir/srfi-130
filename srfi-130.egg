@@ -2,6 +2,7 @@
  (maintainer "Wolfgang Corcoran-Mathe")
  (synopsis "SRFI-130: Cursor-based string library")
  (category data)
+ (version "0.3")
  (test-dependencies test r7rs)
  (license "MIT")
  (components (extension srfi-130)))
